@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Technic Move Hub controller">
+  <!-- Legible at 16px, which rules out detail. What survives at that size is a
+       silhouette and one hard contrast, so the mark is a brick seen end-on: two
+       studs on a body, with a signal arc leaving it. Anything finer turns to
+       porridge in a browser tab.
+
+       The yellow is the app's own accent token. Both halves are pinned rather
+       than left to the colour scheme: a favicon sits on the browser's chrome,
+       not on the page, so it cannot inherit a background it can rely on. -->
+  <rect width="64" height="64" rx="14" fill="#ffcf33"/>
+
+  <!-- The brick body and its two studs. -->
+  <g fill="#1a1a1a">
+    <rect x="12" y="30" width="34" height="20" rx="3"/>
+    <rect x="17" y="22" width="10" height="9" rx="2.5"/>
+    <rect x="31" y="22" width="10" height="9" rx="2.5"/>
+  </g>
+
+  <!-- The radio link, as two arcs off the corner. Stroked rather than filled so
+       it stays visible when the icon is shrunk. -->
+  <g fill="none" stroke="#1a1a1a" stroke-width="4.5" stroke-linecap="round">
+    <path d="M50 30a10 10 0 0 1 0 12"/>
+    <path d="M50 20a20 20 0 0 1 0 32"/>
+  </g>
+</svg>

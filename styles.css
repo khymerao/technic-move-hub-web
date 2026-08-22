@@ -1,0 +1,1504 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   LEGO Move Hub controller — a phone-first control panel, used one-handed in
+   portrait while the car is moving.
+
+   Two properties are load-bearing; everything below is written to keep them
+   true rather than to look tidy:
+
+   1. The page must never scroll horizontally. A sideways pan slides the tab
+      bar off the thumb's reach at the exact moment it is needed. So: every
+      flex/grid child may shrink, every text surface wraps, and nothing is
+      sized in fixed px that the viewport has to accommodate.
+   2. Nothing that cuts power depends on a tap. Every stop is automatic.
+   ───────────────────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+
+  /* One palette for all three surfaces — the landing, the guide and the
+     control panel. Chosen values rather than Canvas and opacity ramps: a page
+     that renders on any background has committed to none, and three surfaces
+     deriving their own greys is how they drift apart.
+
+     --mono is the identity. It carries headings, labels, numbers and bytes
+     everywhere; the system sans is only for running prose. */
+  --paper: #faf8f4;
+  --ink: #16150f;
+  --ink-soft: #55524a;
+  --rule: #d9d4c8;
+  --rule-hard: #16150f;
+  --mono: "JBMono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* One accent, one meaning: this toggle is engaged. Both halves of the pair
+     are pinned, so an engaged control reads identically in light and dark
+     instead of inheriting whichever Canvas the phone happens to be in. */
+  --accent: #ffcf33;
+  --accent-ink: #1a1a1a;
+  --accent-edge: #a9791a;
+
+  /* Dark enough for white text against either scheme, so one token covers
+     both. --danger-text is the variant for danger-coloured *text* on Canvas,
+     which does need to flip. */
+  --danger: #b3261e;
+  --danger-ink: #ffffff;
+  --danger-text: #b3261e;
+
+  --focus: #0b63d6;
+  --line: rgba(127, 127, 127, 0.45);
+  --sunken: rgba(127, 127, 127, 0.16);
+  --track: rgba(127, 127, 127, 0.38);
+  --pressed: rgba(127, 127, 127, 0.34);
+
+  --dot-up: #1f8a4c;
+  --dot-down: #c0271d;
+  --dot-warn: #9a6b00;
+
+  --bar-h: 56px;
+  --gap: 0.75rem;
+  --row-gap: 0.85rem;
+  --tap: 44px;
+  /* Near-square. The 8px pill read as a generic card; a hairline box with a
+     3px corner reads as an instrument. */
+  --radius: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12110e;
+    --ink: #f0ece2;
+    --ink-soft: #9d978a;
+    --rule: #33302a;
+    --rule-hard: #f0ece2;
+    --danger-text: #ff9b8f;
+    --focus: #7db4ff;
+    --dot-up: #4ad07d;
+    --dot-down: #ff6b5e;
+    --dot-warn: #f0b73e;
+  }
+}
+
+/* min-width on every box is the structural half of the no-sideways-scroll
+   guarantee: flex and grid children default to min-width:auto, which refuses
+   to shrink below their content and is how a single long readout drags the
+   whole page wider than the phone. Anything that genuinely needs a floor
+   (lamp keys, LED chips) sets one explicitly below. */
+* { box-sizing: border-box; min-width: 0; }
+
+/* The panels are shown and hidden through the `hidden` attribute, and an id
+   selector carrying `display` outranks the UA rule for it — which is why the
+   dashboard, the tab bar and the panels all rendered before a hub was ever
+   connected. Restate it as the winning rule instead of avoiding `display` on
+   every id in the file. */
+[hidden] { display: none !important; }
+
+html, body { overscroll-behavior: none; }
+body {
+  background: var(--paper); color: var(--ink);
+  margin: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+main {
+  /* The phone measure. Widened below once the landing goes multi-column —
+     leaving it here gave two 204px columns and a five-line headline at 960px. */
+  max-width: 480px; margin: 0 auto;
+  padding: var(--gap) 0.75rem;
+  display: grid; gap: var(--gap);
+}
+
+h1, h2 { margin: 0; font-weight: 600; }
+
+/* Media and form controls are the usual sources of intrinsic width the
+   viewport has to grow to fit. */
+img, svg, input, select, textarea, button { max-width: 100%; }
+
+/* Screen-reader-only: gives an unlabelled readout a name without spending
+   pixels the bar does not have. */
+.vh {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+
+/* ── Interactive state system ─────────────────────────────────────────────
+   Rest, hover, pressed, focus, disabled and "engaged" are defined once here
+   and inherited by every control, so a toggle in Debug behaves like a toggle
+   in Drive. Only geometry is set per component below. */
+
+button {
+  padding: 0.8rem 1.1rem; font-size: 1rem;
+  min-height: var(--tap);
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  background: transparent; color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color 120ms ease-out, transform 80ms ease-out;
+}
+
+@media (hover: hover) {
+  button:hover:not(:disabled) { background: var(--sunken); }
+}
+
+/* Pressed covers both the browser's :active and the class the hold-buttons
+   set from pointer events, since a held button never stays :active on touch. */
+button:active:not(:disabled),
+button.active { background: var(--pressed); }
+button:active:not(:disabled) { transform: scale(0.98); }
+
+/* Engaged. The class is what the panels toggle; aria-pressed carries the same
+   fact to assistive tech, and both are styled so neither can drift. */
+button.on,
+button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent-edge);
+  font-weight: 600;
+}
+button.on:active:not(:disabled),
+button.on.active,
+button[aria-pressed="true"]:active:not(:disabled) { background: var(--accent-edge); }
+
+button:disabled {
+  opacity: 0.45; cursor: not-allowed;
+  /* Keeps a stale tap from reaching a control that is not ready yet. */
+  pointer-events: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+  button:active:not(:disabled) { transform: none; }
+}
+
+/* ── Readouts ─────────────────────────────────────────────────────────────
+   Every <pre> here holds machine output — hex frames, axis floats, tilt
+   triples — with no spaces to break on. Wrapping is what stops them widening
+   the page, and it removes the sideways inner scroll they had instead. */
+pre {
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  background: var(--sunken);
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+}
+
+/* ── Labels and inputs ────────────────────────────────────────────────────
+   A label is one row: name, control, value. The control takes the slack. */
+label {
+  display: flex; align-items: center; gap: 0.75rem;
+  font-size: 0.85rem;
+  min-height: var(--tap);
+}
+/* A label wrapping a checkbox is a sentence, not a row of controls. */
+label:has(input[type="checkbox"]) { gap: 0.6rem; }
+
+label input[type="range"] { flex: 1 1 auto; }
+label input[type="text"], label input[type="number"] { flex: 1 1 4rem; }
+label select { flex: 1 1 auto; }
+label output {
+  min-width: 4ch; text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, monospace; font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+input[type="text"], input[type="number"], input[type="search"], select {
+  min-height: var(--tap);
+  padding: 0.4rem 0.55rem;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: transparent; color: inherit;
+}
+
+input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 24px; height: 24px;
+  accent-color: var(--accent-edge);
+}
+
+/* Sliders are the tuning widget for the whole app, so the thumb is sized as a
+   real touch target rather than the ~12px the platform ships. The 44px box is
+   transparent; only the track and thumb are drawn. */
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  height: var(--tap); margin: 0;
+  background: transparent; color: inherit;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 3px; background: var(--track);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 28px; height: 28px; margin-top: -11px;
+  border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--accent-edge);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px; border-radius: 3px; background: var(--track);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 24px; height: 24px; border: 2px solid var(--accent-edge);
+  border-radius: 50%; background: var(--accent);
+}
+input[type="range"]:disabled { opacity: 0.45; }
+
+details { display: grid; gap: var(--row-gap); }
+details > summary {
+  min-height: var(--tap);
+  display: flex; align-items: center; gap: 0.5rem;
+  cursor: pointer; font-size: 0.9rem;
+  /* display:flex drops the native disclosure marker, and without it a closed
+     section reads as an inert heading. */
+  list-style: none;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before {
+  content: "\25b8"; flex: 0 0 auto;
+  font-size: 1.15em; line-height: 1; opacity: 0.85;
+  transition: transform 120ms ease-out;
+}
+details[open] > summary::before { transform: rotate(90deg); }
+details[open] > summary { margin-bottom: 0.15rem; }
+
+/* ── Persistent chrome ────────────────────────────────────────────────────
+   Three chips on one line at 320px. Each may shrink and each clips its own
+   overflow, so no readout — a 30-character gamepad id being the worst — can
+   push the bar wider than the phone. */
+#topbar { position: sticky; top: 0; z-index: 6; background: var(--paper); }
+
+#chrome {
+  display: flex; align-items: center; flex-wrap: nowrap; gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  padding-top: calc(0.4rem + env(safe-area-inset-top, 0px));
+  min-height: 52px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.78rem;
+}
+#chrome > * { min-width: 0; }
+
+#chrome #connect {
+  flex: 1 1 auto; min-height: var(--tap);
+  font-size: 0.9rem; font-weight: 600;
+}
+
+/* Shrink order when the bar runs out of room at 320px, least useful first:
+   the pad id, then the status wording, then the arm label. The battery and
+   queue depth never shrink — a climbing queue is the early warning that the
+   link is dying, and it is only ~7 characters. */
+/* The link indicator is a status light, not a button-shaped control. It
+   inherits the global button border otherwise, which draws a box around a
+   12px dot and reads as an empty field. The 44px target stays; only the box
+   is gone. */
+#chrome-status {
+  flex: 0 1 auto;
+  display: flex; align-items: center; gap: 0.45rem;
+  padding: 0.35rem 0.5rem;
+  min-height: var(--tap); min-width: var(--tap);
+  border: none; background: transparent;
+  overflow: hidden;
+}
+
+/* Two rings rather than a flat circle: a bright core with a translucent halo
+   in the same hue. That is what makes it read as a lit indicator instead of a
+   stray dot, and it keeps its shape when the fill sits close to Canvas. */
+#state-dot {
+  flex: 0 0 auto;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--track);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.25) inset,
+    0 0 0 4px var(--halo, rgba(127, 127, 127, 0.18));
+  /* Room for the halo, which draws outside the box. */
+  margin: 0 4px;
+  transition: background-color 160ms ease-out, box-shadow 160ms ease-out;
+}
+#state-dot.up { background: var(--dot-up); --halo: color-mix(in srgb, var(--dot-up) 28%, transparent); }
+#state-dot.down { background: var(--dot-down); --halo: color-mix(in srgb, var(--dot-down) 32%, transparent); }
+#state-dot.warn { background: var(--dot-warn); --halo: color-mix(in srgb, var(--dot-warn) 32%, transparent); }
+
+/* A lost link is the one state worth pulling the eye, so it pulses — gently,
+   and never when the user has asked for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  #state-dot.down { animation: pulse 1.4s ease-in-out infinite; }
+}
+@keyframes pulse {
+  50% { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset, 0 0 0 7px transparent; }
+}
+
+/* With a message the chip becomes a tinted pill: the text needs a surface to
+   sit on, and the tint says how bad it is without a second colour system. */
+#chrome-status:has(#status-brief:not(:empty)) {
+  background: color-mix(in srgb, var(--tint, var(--sunken)) 22%, transparent);
+  border-radius: 999px;
+  padding-right: 0.7rem;
+}
+#chrome-status:has(.down) { --tint: var(--dot-down); }
+#chrome-status:has(.warn) { --tint: var(--dot-warn); }
+
+/* Colour is not the only carrier: every state except a healthy link also
+   writes its reason into #status-brief. */
+#status-brief {
+  font-size: 0.72rem; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 11ch;
+}
+#status-brief:empty { display: none; }
+
+/* The bar and the number sit on one baseline, and the whole group is one
+   inline row so it cannot drift as the readouts change width. */
+#chrome #battery {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  font: 400 0.72rem var(--mono); letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+#chrome .bat { width: 26px; height: 12px; flex: 0 0 auto; display: block; }
+#chrome .bat__shell { fill: none; stroke: currentColor; stroke-width: 1.2; opacity: 0.55; }
+#chrome .bat__cap { fill: currentColor; opacity: 0.55; }
+#chrome .bat__fill { fill: currentColor; }
+#chrome .bat__fill.low { fill: var(--danger-text); }
+#chrome #bat-pct { min-width: 3.2ch; text-align: right; }
+
+/* The arm switch gets the leftover width, and truncates its own pad id before
+   the label — the label is the safety-relevant half. */
+/* Compact, and pushed to the far end of the bar. The auto margin is what
+   right-aligns it: an ::after spacer sat after the button and pushed the whole
+   row left instead. The state is carried by the accent fill rather than by a
+   word, so it needs room for "PAD" and a pad id and nothing more. */
+#chrome #gp-enable {
+  /* inline-flex, not the default inline-block: `gap` does nothing on a
+     non-flex box, so the label and the pad id rendered as "PAD: ARMEDnot
+     connected" with no space between them. */
+  display: inline-flex; align-items: center;
+  padding-inline: 0.7rem; gap: 0.35rem;
+  margin-inline-start: auto;
+}
+#gp-label { flex: 0 0 auto; white-space: nowrap; }
+#gp-status {
+  flex: 0 40 auto;
+  font-family: ui-monospace, monospace; font-weight: 400; font-size: 0.68rem;
+  opacity: 0.8;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#gp-status:empty { display: none; }
+
+/* ── Panels ──────────────────────────────────────────────────────────────
+   Common region: one bordered box per topic, with the heading inside it. */
+#dashboard, .tabpanel { display: grid; gap: 0.9rem; }
+
+/* Hairline boxes on paper, not tinted cards. */
+.panel, .motor, #lights-box, #steer-box, #probe {
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  padding: var(--gap);
+  display: grid; gap: var(--row-gap);
+}
+#probe { border: none; padding: 0.5rem 0 0; }
+
+.lights-head {
+  font: 700 0.68rem var(--mono);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.head-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 0.5rem; flex-wrap: wrap;
+}
+
+#motors, #motor-dirs { display: grid; gap: var(--gap); }
+.motor-head { font-size: 0.8rem; font-weight: 600; }
+.speed-out { font-family: ui-monospace, monospace; font-weight: 700; }
+
+/* Hold-to-drive rows. Tall on purpose: these are pressed blind, with the eyes
+   on the car. touch-action stops a held press turning into a page pan. */
+.motor-btns { display: flex; gap: var(--gap); }
+.motor-btns button {
+  flex: 1 1 0; height: 64px; font-size: 1.05rem;
+  touch-action: none; user-select: none;
+}
+
+/* Rows of equal-weight sibling actions. */
+.probe-btns { display: flex; gap: var(--gap); flex-wrap: wrap; }
+.probe-btns button {
+  flex: 1 1 8ch; min-height: var(--tap);
+  padding: 0.5rem 0.6rem; font-size: 0.85rem;
+}
+
+#steer-box #st-left, #steer-box #st-right {
+  height: 60px; font-size: 1rem;
+  touch-action: none; user-select: none;
+}
+#st-readout {
+  font-family: ui-monospace, monospace; font-weight: 400; font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+#lamps { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.lamp { flex: 1 1 44px; min-width: 44px; height: 48px; font-size: 1rem; }
+
+#leds { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+#leds button {
+  flex: 1 1 6ch; min-width: var(--tap); min-height: var(--tap);
+  padding: 0.5rem 0.6rem; font-size: 0.85rem;
+}
+
+/* Diagnostic, not part of the task — recedes, but stays a full-size target. */
+#lamps-chase.tertiary { opacity: 0.75; font-size: 0.85rem; padding: 0.5rem; }
+
+#ports { font-size: 0.85rem; overflow-wrap: anywhere; }
+
+.release-btn { font-size: 0.85rem; padding: 0.5rem 0.7rem; text-align: left; }
+
+#gp-live { font-size: 0.75rem; }
+#gp-map { display: grid; gap: 0.4rem; }
+.map-row {
+  text-align: left; font-size: 0.8rem;
+  padding: 0.5rem 0.7rem; min-height: var(--tap);
+  overflow-wrap: anywhere;
+}
+/* Learning is a transient prompt, not an engaged toggle, so it borrows the
+   accent fill but keeps its own class. */
+.map-row.learning {
+  background: var(--accent); color: var(--accent-ink);
+  border-color: var(--accent-edge);
+}
+
+#debug { display: grid; gap: 0.5rem; }
+.debug-bar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.debug-bar .lights-head { flex: 1 1 100%; }
+.debug-bar button {
+  flex: 1 1 6ch; min-height: var(--tap);
+  padding: 0.5rem 0.7rem; font-size: 0.85rem;
+}
+/* The only justified inner scroll in the app: a continuous stream inside a
+   fixed frame. One axis — lines wrap, so it never scrolls sideways. */
+#log {
+  max-height: 45vh;
+  overflow-y: auto; overflow-x: hidden;
+  font-size: 0.75rem; line-height: 1.4;
+}
+
+#probe-box > summary { color: var(--danger-text); font-weight: 600; }
+
+/* ── Macros ──────────────────────────────────────────────────────────────
+   The editor is the one free-text surface in the app: an unbroken line wraps
+   inside the box rather than widening the page. */
+.macro-slot-row { display: flex; gap: var(--gap); flex-wrap: wrap; }
+.macro-slot-row select { flex: 1 1 10rem; }
+.macro-slot-row button { flex: 0 0 auto; }
+
+#macro-source {
+  width: 100%;
+  min-height: 12rem;
+  padding: 0.6rem 0.7rem;
+  font-family: ui-monospace, monospace; font-size: 0.85rem; line-height: 1.5;
+  /* Wraps rather than scrolling sideways — the one rule every surface in
+     this file follows. */
+  overflow-wrap: anywhere;
+  border-radius: 6px; border: 1px solid var(--line);
+  background: transparent; color: inherit;
+  resize: vertical;
+}
+
+.macro-bar { display: flex; align-items: center; gap: var(--gap); flex-wrap: wrap; }
+.macro-bar button { flex: 1 1 6ch; min-height: var(--tap); padding: 0.5rem 0.6rem; font-size: 0.85rem; }
+.macro-bar label { flex: 0 0 auto; min-height: 0; }
+#macro-elapsed {
+  flex: 1 1 5ch; text-align: right;
+  font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums;
+}
+
+#macro-status { font-size: 0.8rem; overflow-wrap: anywhere; }
+
+/* Safari draws type="search" as a rounded native field unless the appearance
+   is dropped, which the rule above cannot override on its own. */
+#macro-search { width: 100%; -webkit-appearance: none; appearance: none; }
+
+.macro-examples { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+
+.macro-method-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 40vh;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.macro-method {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  text-align: left;
+  /* A row of a long list, not a control: the global 44px tap height and
+     border would make 27 of them ~1240px inside a 40vh box. */
+  min-height: 0;
+  border: 0;
+  padding: 0.3rem 0.4rem;
+  /* The list is a column flex container, so a row defaults to flex-shrink: 1.
+     Once the rows exceed its max-height each one is squashed to a fraction of
+     its content height and the text spills over its neighbours. */
+  flex-shrink: 0;
+}
+
+.macro-method code { font-size: 0.85rem; overflow-wrap: anywhere; }
+.macro-hint { opacity: 0.65; font-size: 0.8rem; }
+
+.macro-path {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 0 0.25rem;
+}
+
+.macro-danger { color: var(--danger-text); opacity: 1; }
+
+.macro-hidden { font-size: 0.8rem; opacity: 0.65; margin: 0.4rem 0 0; }
+
+/* ── Pre-connect ─────────────────────────────────────────────────────────
+   Connect is a chip in the chrome bar, so this is only the explanation and
+   the failure reason. It takes no room when both are empty. */
+#precon { display: grid; gap: 0.5rem; padding: 0; }
+#precon:empty, #precon > :empty { display: none; }
+#precon #support {
+  margin: 0; padding: 0 0.25rem;
+  font-size: 0.9rem; line-height: 1.45; opacity: 0.85;
+}
+#precon #support:empty { display: none; }
+/* Support is a pre-connect answer. Once a hub is attached it is a row of dead
+   text above every tab, on the one screen that has the least room to spare. */
+main:has(#dashboard:not([hidden])) #support { display: none; }
+/* Same reasoning, whole page: once there is a hub to drive, the brochure is in
+   the way. One URL, two states. */
+main:has(#dashboard:not([hidden])) #landing { display: none; }
+/* And the chrome bar is the mirror image: before a hub it holds nothing but a
+   Connect button the landing already offers, so it is an empty strip and a
+   duplicate at once. It appears with the dashboard, where it carries the link
+   state, the battery and the gamepad arm. The element stays in the tree — the
+   connect handler is bound to the button inside it. */
+body:not(:has(#dashboard:not([hidden]))) #chrome { display: none; }
+#precon #status {
+  margin-top: 0.5rem; padding: 0.5rem 0.25rem 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  font-size: 0.8rem;
+}
+
+#tabbar {
+  display: flex;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+#tabbar button {
+  flex: 1 1 0; min-height: var(--bar-h);
+  /* Six buttons plus the Guide link share 320px. Horizontal padding is removed
+     to fit six-letter labels at 0.72rem. */
+  padding: 0.4rem 0;
+  border: none; border-radius: 0;
+  font-size: 0.72rem; background: transparent;
+  opacity: 0.7;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#tabbar button.on,
+#tabbar button[aria-current="true"] {
+  opacity: 1; font-weight: 700;
+  background: transparent; color: inherit;
+  box-shadow: inset 0 -3px 0 currentColor;
+}
+#tabbar button:focus-visible { outline-offset: -4px; }
+
+/* The guide link sits in the bar but is not a tab, so it borrows the tabs'
+   geometry and drops their state markers. It reads quieter than the section it
+   would otherwise be mistaken for. */
+#tab-guide {
+  flex: 0 1 auto; min-height: var(--bar-h);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0.4rem 0.15rem;
+  color: inherit; text-decoration: none;
+  opacity: 0.55;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+@media (hover: hover) { #tab-guide:hover { opacity: 1; } }
+#tab-guide:focus-visible { outline-offset: -4px; }
+
+.note { font-size: 0.78rem; opacity: 0.8; line-height: 1.5; margin: 0; }
+#playvm-box summary { color: var(--danger-text); }
+
+/* ── Desktop ─────────────────────────────────────────────────────────────
+   Not the phone layout stretched. A pointer, a keyboard and a wide screen are
+   a different interaction context, so three things change.
+
+   Navigation moves to a persistent left rail: on a desktop there is no thumb
+   to reach with, and a bar across the top of a wide screen leaves seven labels
+   stranded in a strip of nothing.
+
+   Panels flow into columns instead of one tall stack. The phone shows one
+   thing at a time because it must; a desktop showing one thing at a time is
+   just wasted glass, and while driving you want the steering readout, the
+   motors and the behaviour selector at once.
+
+   Content is capped and centred, because dragging a slider at one edge of an
+   ultra-wide monitor while reading a value at the other is worse than a
+   narrower layout, not better. */
+@media (min-width: 1024px) {
+  :root { --rail: 200px; }
+
+  body {
+    /* The bottom bars are gone at this width, so their reserved space goes too.
+       The rail is fixed, so the page reserves its width here rather than each
+       child offsetting itself — margin-left on main would be overridden by the
+       auto margins that centre it, and the content would slide under the rail. */
+    padding-bottom: 0;
+  }
+  /* Only reserve the rail where the rail is. The landing shares this body and
+     has no rail, so an unconditional padding pushed the whole brochure 200px
+     right against nothing — measured at 1440px: left 200, right 0. */
+  body:has(#dashboard:not([hidden])) { padding-left: var(--rail); }
+
+  #tabbar {
+    position: fixed; top: 0; left: 0; right: auto; bottom: 0; z-index: 6;
+    width: var(--rail);
+    flex-direction: column;
+    align-items: stretch;
+    border-top: none; border-right: 1px solid var(--line);
+    padding: 0.5rem 0;
+  }
+  #tabbar button {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 0.55rem 0.9rem;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+  /* On a vertical rail the current-tab marker has to become an edge marker. */
+  #tabbar button.on,
+  #tabbar button[aria-current="true"] {
+    box-shadow: inset 3px 0 0 currentColor;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+  }
+
+  /* The floating donate widget parks itself in the bottom-left corner, which
+     on this width is the rail. 65px tall plus its own 16px inset. */
+  #tabbar { padding-bottom: 90px; }
+
+  /* The rail is tall and the sections stop a third of the way down. The auto
+     margin drops the guide link to the foot of that empty column, above STOP
+     ALL, where a "leave this page" link belongs — not tucked under Debug as if
+     it were a sixth section. */
+  #tab-guide {
+    margin-top: auto;
+    justify-content: flex-start;
+    min-height: 40px;
+    padding: 0.55rem 0.9rem;
+    border-top: 1px solid var(--line);
+  }
+
+  #chrome { padding-inline: 1.25rem; font-size: 0.85rem; }
+  /* On a phone the connect button is the whole bar because it is the only
+     thing to do. On a desktop landing the page has its own call to action, so
+     the one up here is a shortcut and should read as one. The pad button is
+     the same story: it grew to 1117px of empty box across the bar. */
+  #chrome #connect, #chrome #gp-enable { flex: 0 0 auto; padding-inline: 1rem; }
+
+
+  main {
+    max-width: 1400px;
+    padding: 1.25rem 1.5rem 2rem;
+    /* Centred within the space left of the rail, not of the viewport. */
+    margin-inline: auto;
+  }
+
+  /* Panels fill the width in columns. auto-fit rather than a fixed count, so
+     a half-width window degrades to one column instead of squeezing three. */
+  .tabpanel {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    align-items: start;
+    gap: 1.1rem;
+  }
+  /* The log wants the full width far more than it wants a column. */
+  .tabpanel > #debug,
+  .tabpanel > #playvm-box,
+  .tabpanel > #probe-box,
+  .tabpanel > #macro-editor { grid-column: 1 / -1; }
+  #log { max-height: 60vh; }
+
+  /* Touch sizing is a floor for fingers, not for a cursor. Controls stay
+     comfortably clickable without the phone's padding. */
+  #motors .motor button, .probe-btns button { min-height: 38px; }
+}
+
+/* Ultra-wide: the cap above already holds the content together; the rail and
+   the page background stay full-bleed so the layout does not look marooned. */
+@media (min-width: 1800px) {
+  main { padding-inline: 2rem; }
+}
+
+/* ── Landing ─────────────────────────────────────────────────────────────
+   The page a visitor without a hub sees. It shares the shell with the control
+   panel and disappears the moment a hub attaches.
+
+   The subject is thirteen bytes read off a wire, so the page is set like a
+   technical document rather than a product brochure: monospace carries the
+   headings, the numbers and the frame; a chosen paper and ink rather than the
+   system's; and the yellow is a surface the section markers sit on, not a tint
+   on one button. The frame itself is the hero and it is live.
+
+   Everything is scoped under #landing so none of it reaches the driving
+   surface, where different rules apply. */
+@font-face {
+  font-family: "JBMono";
+  src: url("/assets/fonts/jetbrains-mono-regular.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "JBMono";
+  src: url("/assets/fonts/jetbrains-mono-bold.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+
+#landing {
+  background: var(--paper); color: var(--ink);
+  padding: 0 0 4rem;
+  line-height: 1.6;
+
+  /* A named content column rather than per-child centring. Every child that
+     needed its own margin — the frame, the actions, the footer — was quietly
+     overriding `margin-inline: auto` by specificity, so the headline sat
+     centred while the frame it introduces started 400px to its left. A grid
+     track cannot be overridden by a child's margin shorthand. */
+  --pad: clamp(1.1rem, 5vw, 3rem);
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(var(--pad), 1fr)
+    [content-start] minmax(0, 72rem)
+    [content-end] minmax(var(--pad), 1fr)
+    [full-end];
+}
+#landing > * { grid-column: content; }
+/* The section is painted edge to edge; main's own padding would leave a strip
+   of paper around it.
+   Keyed on the dashboard being hidden, not on the landing existing: #landing
+   stays in the DOM once a hub connects and is only display:none, so
+   `main:has(#landing)` matched the control panel too — and handed it the
+   landing's full-bleed, zero-padding layout. */
+main:has(#dashboard[hidden]) { padding: 0; max-width: none; }
+
+#landing h1, #landing h2, #landing h3 { font-family: var(--mono); }
+#landing p { margin: 0 0 0.9rem; max-width: 64ch; }
+#landing p:last-child { margin-bottom: 0; }
+#landing a { color: inherit; text-underline-offset: 3px; }
+
+/* ── Lede ── */
+#landing .lede { padding-top: clamp(2rem, 7vw, 4.5rem); }
+#landing .kicker {
+  font: 400 0.7rem/1.4 var(--mono);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-soft); margin-bottom: 1.4rem;
+}
+#landing h1 {
+  font-size: clamp(2rem, 6vw, 3.4rem); font-weight: 700;
+  letter-spacing: -0.03em; line-height: 1.05; margin: 0 0 1.2rem;
+}
+#landing .sub {
+  font-size: clamp(1rem, 2vw, 1.12rem); color: var(--ink-soft); max-width: 54ch;
+}
+#landing .sub b { color: var(--ink); font-weight: 600; }
+
+/* ── The frame ── */
+/* Unscoped, unlike everything around it. The guide names the combined frame in
+   twenty places and never showed it once; the same figure now stands under
+   Drive behaviour → mode there. One rendering of one artifact, on both pages —
+   a second copy under a guide selector is how the two would drift. */
+.wire { margin: 2.5rem 0 0; }
+/* It scrolls rather than wraps. A thirteen-byte frame that breaks across two
+   lines has stopped being a frame. */
+.wire__scroll { overflow-x: auto; padding-bottom: 0.5rem; }
+.wire__grid { display: inline-grid; gap: 0.35rem; }
+/* The frame is as wide as its bytes, and no wider. The marks are annotations
+   pointing at fields; left free to contribute, "write to the drive port" —
+   which spans two columns — sized every one of the thirteen tracks to its own
+   width. Invisible while the landing's column was wide enough to absorb it, and
+   three times over budget the moment the same figure stood in the guide. */
+.wire__ruler, .wire__bytes { min-width: max-content; }
+.wire__marks span { min-width: 0; }
+/* One column definition for all three rows, so the ruler, the bytes and the
+   brackets stay in register no matter how wide the frame gets. */
+.wire__grid { --cols: repeat(13, minmax(2.5rem, 1fr)); }
+.wire__ruler, .wire__bytes, .wire__marks {
+  display: grid; grid-template-columns: var(--cols); gap: 0.3rem;
+}
+.wire__ruler span {
+  font: 400 0.62rem/1 var(--mono); color: var(--ink-soft);
+  text-align: center; letter-spacing: 0.06em;
+}
+.wire__bytes span {
+  font: 700 clamp(1rem, 2.6vw, 1.5rem)/1 var(--mono);
+  text-align: center; padding: 0.75rem 0.25rem;
+  border: 1px solid var(--rule); border-radius: 3px;
+  background: transparent; color: var(--ink-soft);
+  transition: background-color 120ms linear, color 120ms linear;
+}
+.wire__bytes .k { color: var(--ink); border-color: var(--rule-hard); }
+.wire__bytes .v-speed,
+.wire__bytes .v-steer,
+.wire__bytes .v-light {
+  color: var(--ink); border-color: var(--rule-hard); border-width: 2px;
+}
+.wire__bytes .changed { background: var(--accent); color: #16150f; }
+
+/* Brackets under the fields they name. Positioned by column so they stay put
+   when the frame scrolls. */
+.wire__marks { font: 400 0.66rem/1.3 var(--mono); color: var(--ink-soft); }
+.wire__marks span { position: relative; padding-top: 0.55rem; }
+.wire__marks span::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0;
+  border-top: 1px solid var(--rule); border-left: 1px solid var(--rule);
+  border-right: 1px solid var(--rule); height: 0.35rem;
+}
+.m-port  { grid-column: 3 / 5; }
+.m-speed { grid-column: 10; }
+.m-steer { grid-column: 11; }
+.m-light { grid-column: 12; }
+
+.wire__drive {
+  display: flex; flex-wrap: wrap; gap: 0.9rem 1.6rem;
+  margin-top: 1.6rem; align-items: center;
+}
+.wire__drive label {
+  display: flex; align-items: center; gap: 0.6rem;
+  font: 400 0.72rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.wire__drive input[type="range"] { width: clamp(9rem, 26vw, 15rem); }
+.wire__drive output {
+  font: 700 0.85rem var(--mono); color: var(--ink);
+  min-width: 4ch; text-align: right;
+  font-variant-numeric: tabular-nums; letter-spacing: normal;
+}
+.wire__drive select {
+  font: 400 0.8rem var(--mono); background: transparent; color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 3px; padding: 0.3rem 0.4rem;
+}
+#landing figcaption {
+  margin-top: 1rem; font-size: 0.85rem; color: var(--ink-soft); max-width: 58ch;
+}
+
+/* ── Actions ── */
+#landing .cta-row {
+  display: flex; flex-wrap: wrap; gap: 0.7rem;
+  margin: 2.5rem 0 0.5rem; max-width: none;
+}
+#landing #cta-connect {
+  min-height: var(--tap); padding: 0 1.5rem;
+  font: 700 0.85rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase;
+  background: var(--accent); color: #16150f;
+  border: 1px solid var(--rule-hard); border-radius: 3px;
+}
+#landing .ghost {
+  min-height: var(--tap); display: inline-flex; align-items: center;
+  padding: 0 1rem; text-decoration: none;
+  font: 400 0.85rem var(--mono); letter-spacing: 0.06em; text-transform: uppercase;
+  border: 1px solid var(--rule); border-radius: 3px; color: var(--ink);
+}
+#landing .micro { font-size: 0.78rem; color: var(--ink-soft); }
+#landing #cta-note:empty { display: none; }
+
+/* ── Sections ── */
+#landing .sec { margin-top: clamp(3rem, 8vw, 5.5rem); padding-top: 1.4rem; }
+#landing .sec { border-top: 1px solid var(--rule); }
+#landing h2 {
+  font-size: clamp(1.1rem, 2.4vw, 1.35rem); font-weight: 700;
+  letter-spacing: 0.02em; margin: 0 0 1.4rem;
+  display: flex; align-items: baseline; gap: 0.9rem;
+}
+/* The index is the yellow, and it is a surface rather than a highlight. */
+#landing h2 i {
+  font-style: normal; font-size: 0.7rem; letter-spacing: 0.1em;
+  background: var(--accent); color: #16150f;
+  padding: 0.25rem 0.45rem; border-radius: 2px;
+}
+#landing h3 {
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-soft);
+  margin: 2.2rem 0 0.9rem;
+}
+
+#landing .sec__split { display: grid; gap: 1.8rem; }
+
+/* The hub is a cut-out on transparency, so it needs no frame and nothing to
+   blend away — it sits on the page background in either colour scheme. */
+#landing .shot { margin: 0; display: flex; }
+#landing .shot img { width: 100%; height: auto; display: block; }
+
+/* A spec table, not a card grid: the same facts, ranked, in a form that admits
+   there is no hierarchy to invent between them. */
+#landing .spec { border-collapse: collapse; width: 100%; }
+#landing .spec th, #landing .spec td {
+  text-align: left; vertical-align: top; padding: 0.55rem 0;
+  border-bottom: 1px solid var(--rule); font-size: 0.9rem;
+}
+#landing .spec th {
+  font: 400 0.72rem var(--mono); letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-soft); width: 11rem; padding-right: 1.2rem; white-space: nowrap;
+}
+#landing .spec td { color: var(--ink); }
+
+/* A verdict list, not a feature list. Two audiences arrive on this page — one
+   holding the set, one holding a brick the official app has told them is
+   useless outside it — and both are answered before the frame, in the same
+   ranked-rows form the spec tables use. The accent carries its one meaning:
+   this case is served. */
+#landing .verdict { list-style: none; margin: 2.2rem 0 0; padding: 0; }
+#landing .verdict li {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr) auto;
+  gap: 0.35rem 1.2rem; align-items: baseline;
+  padding: 0.7rem 0; border-bottom: 1px solid var(--rule);
+}
+#landing .verdict li:first-child { border-top: 1px solid var(--rule); }
+#landing .verdict b {
+  font: 400 0.72rem var(--mono); letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+#landing .verdict span { font-size: 0.95rem; color: var(--ink); }
+#landing .verdict i {
+  font-style: normal; justify-self: end;
+  font: 700 0.72rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--accent); color: #16150f;
+  padding: 0.25rem 0.45rem; border-radius: 2px;
+}
+/* The unserved case is the absence of the accent, not a second colour. Red here
+   would read as a hazard, which is what the safety section owns. */
+#landing .verdict i.no { background: transparent; color: var(--ink-soft); padding-inline: 0; }
+
+/* Three columns will not fit a phone, and this page may never scroll sideways:
+   the label and the verdict share the first row, the sentence takes the second. */
+@media (max-width: 44rem) {
+  #landing .verdict li { grid-template-columns: minmax(0, 1fr) auto; }
+  #landing .verdict b { grid-column: 1; }
+  #landing .verdict i { grid-column: 2; grid-row: 1; }
+  #landing .verdict span { grid-column: 1 / -1; }
+}
+
+#landing .setlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
+#landing .setlist li { border-left: 3px solid var(--accent); padding-left: 0.9rem; }
+#landing .setlist b { font: 700 0.85rem var(--mono); margin-right: 0.5rem; }
+#landing .setlist span { display: block; color: var(--ink-soft); font-size: 0.88rem; margin-top: 0.15rem; }
+/* #landing p carries a bottom margin only, so a note after a list sat on its
+   last row. */
+#landing .setlist + p, #landing .spec + p { margin-top: 1.1rem; }
+
+#landing .answer { font-size: 1.02rem; }
+#landing .links { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: 1.2rem;
+  font: 400 0.8rem var(--mono); }
+
+/* ── Safety ── */
+#landing .sec--warn { border-top-color: var(--danger); }
+#landing .sec--warn h2 i { background: var(--danger); color: #fff; }
+#landing .warn { list-style: none; margin: 1.2rem 0 0; padding: 0; display: grid; gap: 0.8rem; }
+/* The "!" is a flex item, and so is everything beside it. A bullet whose prose
+   contains a link was therefore split into four columns — bold, text, link,
+   text — the moment one gained a link. The prose is wrapped in a single span
+   for that reason; this rule assumes exactly two items. */
+#landing .warn li {
+  color: var(--ink-soft);
+  display: flex; align-items: baseline; gap: 0.7rem;
+}
+#landing .warn li > span { min-width: 0; }
+#landing .warn li::before {
+  content: "!"; flex: none; width: 0.6rem; text-align: center;
+  font: 700 0.85rem var(--mono); color: var(--danger-text);
+}
+#landing .warn b { color: var(--ink); }
+
+/* ── Share ── */
+/* Quiet on purpose. It sits after the last section and before the small print,
+   which is where a reader who finished the page ends up — not beside Connect a
+   hub, which is the one thing this page asks anyone to do.
+   Copy link comes first: this project's audience argues in forum threads and
+   Discord servers, where sharing is a pasted URL rather than anyone's button. */
+#landing .share {
+  margin-top: clamp(3rem, 8vw, 5rem);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 1.2rem;
+  font: 400 0.8rem var(--mono);
+}
+#landing .share__k {
+  font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+/* Text links, but sized to the thumb: this page is read on a phone, and 0.8rem
+   of mono is a 15px target without it. */
+#landing .share a, #landing .share button {
+  display: inline-flex; align-items: center; min-height: var(--tap);
+  font: inherit; letter-spacing: 0.04em; color: var(--ink);
+  background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: var(--rule);
+}
+#landing .share a:hover, #landing .share button:hover { text-decoration-color: currentColor; }
+/* While it is reporting what happened, it is a message and not a control. */
+#landing .share button[data-said] { text-decoration: none; color: var(--ink-soft); cursor: default; }
+
+/* ── Foot ── */
+#landing .foot {
+  margin-top: clamp(3rem, 8vw, 5rem); padding-top: 1.4rem;
+  border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: 0.85rem;
+}
+#landing .risk b { color: var(--ink); }
+
+@media (min-width: 860px) {
+  /* At this width the frame stops being an illustration and becomes the page.
+     inline-grid sized it to its content and left it stranded in a column twice
+     its width. */
+  .wire__grid { display: grid; width: 100%; }
+  .wire__bytes span { padding: 1.1rem 0.25rem; }
+  .wire__ruler span { font-size: 0.68rem; }
+  #landing .sec__split { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: stretch; gap: 2.5rem; }
+  /* The spec table is taller than the photo. Left as `start`, the photo ended
+     a hundred pixels short of it and the section read as unfinished — so the
+     frame grows to the table's height and the image sits centred inside it.
+     Both columns now end on the same line. */
+  #landing .shot img { height: 100%; object-fit: contain; }
+  /* The cut-out has no frame to end on, so the heading below it needs more
+     room than the 2.2rem that was enough under a bordered photo — at that
+     distance "Sets that carry it" read as part of the picture. Only here:
+     stacked, the heading follows the table, which ends on a hairline. */
+  #landing .sec__split + h3 { margin-top: 3.6rem; }
+}
+
+
+/* ── App: the same language as the landing ───────────────────────────────
+   The control panel is a phone layout on purpose and none of this changes its
+   sizes — tap targets, spacing and contrast are untouched. What changes is the
+   voice: mono for anything that is a label, a state or a number, hairline rules
+   instead of tinted fills, and the yellow reserved for "this is engaged". */
+#st-readout, #gp-live, #gp-axes, #tilt, #status-full, #status,
+#bat-pct, #queue-depth, #gp-status, #ports, #log {
+  font-family: var(--mono);
+}
+#chrome { font-family: var(--mono); letter-spacing: 0.02em; }
+#chrome #connect, #gp-label {
+  font: 700 0.78rem var(--mono);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+/* Sliders and selects read as settings on an instrument. */
+#dashboard label {
+  font: 400 0.72rem var(--mono);
+  letter-spacing: 0.06em;
+}
+#dashboard select {
+  font-family: var(--mono); font-size: 0.78rem;
+  border-radius: var(--radius);
+}
+
+/* The guide link joins the tabs here rather than styling itself: sitting in
+   the same bar in the system sans while everything around it was mono made it
+   read as a rendering fault. It is quieter than a tab through opacity alone. */
+#tabbar button, #tab-guide {
+  font: 400 0.7rem var(--mono);
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+#tabbar button.on, #tabbar button[aria-current="true"] { font-weight: 700; }
+
+/* The log is the one place that was already right. */
+#log { font-size: 0.72rem; }
+
+/* ── Guide page ──────────────────────────────────────────────────────────
+   The same language as the landing and the app: chosen paper and ink, mono for
+   anything that is a label or a heading, hairline rules, no tinted cards.
+
+   Three things carry it. A sidebar that stays put, because the question people
+   arrive with is "what does THIS switch do". A search that filters rather than
+   jumps, for the same reason. And a hierarchy strong enough to read at a
+   glance — without it every control looks like every other paragraph. */
+body.doc {
+  background: var(--paper); color: var(--ink);
+  padding-bottom: 3rem;
+}
+
+/* ── Sidebar ── */
+.docside {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.75rem clamp(1rem, 4vw, 1.5rem) 0.85rem;
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+  background: var(--paper);
+  position: sticky; top: 0; z-index: 5;
+  display: grid; gap: 0.7rem;
+}
+.docside .back {
+  font: 700 0.72rem var(--mono);
+  letter-spacing: 0.08em; text-transform: uppercase;
+  text-decoration: none; color: inherit;
+  display: inline-flex; align-items: center; min-height: 2rem;
+}
+
+.find { margin: 0; display: grid; gap: 0.3rem; }
+.find input {
+  width: 100%; min-height: var(--tap);
+  padding: 0 0.75rem;
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: transparent; color: var(--ink);
+  font: 400 0.85rem var(--mono);
+}
+.find input::placeholder { color: var(--ink-soft); }
+.find input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.find__count { margin: 0; font: 400 0.68rem var(--mono); color: var(--ink-soft); letter-spacing: 0.06em; }
+.find__count:empty { display: none; }
+.find__none {
+  margin: 2rem 0; padding: 1rem;
+  border: 1px dashed var(--rule); border-radius: var(--radius);
+  color: var(--ink-soft); font-size: 0.9rem;
+}
+
+.toc { list-style: none; margin: 0; padding: 0; font-size: 0.82rem; }
+.toc a {
+  color: var(--ink-soft); text-decoration: none;
+  display: block; padding: 0.28rem 0.5rem; border-radius: var(--radius);
+}
+.toc a:hover { color: var(--ink); }
+.toc a.on { color: var(--ink); font-weight: 600; background: var(--accent); color: var(--accent-ink); }
+.toc__g > a {
+  font: 700 0.7rem var(--mono);
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink);
+}
+.toc__g > ul { list-style: none; margin: 0 0 0.55rem; padding: 0 0 0 0.55rem; border-left: 1px solid var(--rule); }
+
+/* On a phone the nested list would be most of the screen. The sections stay,
+   as a single scrolling row; individual controls are reached by search. */
+.toc__g > ul { display: none; }
+.toc { display: flex; gap: 0.2rem; overflow-x: auto; padding-bottom: 0.2rem; }
+.toc__g > a { white-space: nowrap; }
+/* The global `* { min-width: 0 }` that guarantees the page never scrolls
+   sideways works against this row: it lets each item shrink below its own
+   nowrap label, so the section names overlapped each other. This row is the
+   one place that is MEANT to overflow — it scrolls inside itself, so the page
+   still doesn't. */
+.toc__g { flex: 0 0 auto; }
+
+/* ── Body ── */
+.docbody {
+  max-width: 46rem;
+  padding: clamp(1.2rem, 4vw, 2.2rem) clamp(1rem, 4vw, 2rem) 4rem;
+  line-height: 1.65;
+}
+.docbody h1 {
+  font: 700 clamp(1.8rem, 5vw, 2.6rem)/1.05 var(--mono);
+  letter-spacing: -0.03em; margin: 0 0 1.2rem;
+}
+.docbody h1 + p { color: var(--ink-soft); max-width: 60ch; }
+
+/* A section break you cannot miss. */
+.group { margin-top: 3.5rem; }
+.group:first-of-type { margin-top: 2rem; }
+.docbody h2 {
+  font: 700 clamp(1.05rem, 2.6vw, 1.3rem) var(--mono);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  margin: 0 0 1.6rem; padding-top: 1.2rem;
+  border-top: 2px solid var(--rule-hard);
+}
+
+/* Each control is a block, not a paragraph in a stream. */
+.ctrl { margin: 0 0 1.6rem; padding: 0 0 0 1rem; border-left: 2px solid var(--rule); }
+.ctrl:hover { border-left-color: var(--accent); }
+.docbody h3 {
+  font: 700 0.95rem var(--mono);
+  letter-spacing: 0.01em; margin: 0 0 0.55rem;
+}
+.docbody h4 {
+  font: 700 0.72rem var(--mono);
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft);
+  margin: 1.4rem 0 0.4rem;
+}
+.docbody :is(h1, h2, h3, h4) { scroll-margin-top: 6.5rem; }
+
+.docbody p { margin: 0 0 0.65rem; }
+.docbody p:last-child { margin-bottom: 0; }
+
+/* The three recurring lead-ins, marked so the eye can find the warning without
+   reading the sentence it starts. */
+.lead__k {
+  display: inline-block; margin-right: 0.5rem;
+  font: 700 0.66rem var(--mono);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.lead--watch-out { color: var(--ink-soft); }
+.lead--watch-out .lead__k { color: var(--danger-text); }
+
+.docbody ul, .docbody ol { margin: 0 0 0.9rem; padding-left: 1.2rem; }
+.docbody li { margin-bottom: 0.3rem; }
+.docbody hr { border: none; border-top: 1px solid var(--rule); margin: 2rem 0; }
+.docbody code {
+  font: 0.88em var(--mono);
+  background: transparent; color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 2px;
+  padding: 0.05em 0.3em;
+}
+/* --ink-soft is relative to nothing now, but a softened element inside a
+   softened block still reads as an error. Emphasis inherits. */
+.docbody em { color: var(--ink-soft); font-style: normal; }
+.docbody .lead em, .docbody .lead__k + em { color: inherit; }
+
+/* Tables carry the gamepad bindings and the drive modes. On a phone they are
+   wider than the screen, so they scroll inside their own box — the page itself
+   must never pan sideways. */
+.docbody .scroller { overflow-x: auto; margin: 0 0 1rem; }
+.docbody table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+.docbody th, .docbody td {
+  text-align: left; vertical-align: top;
+  padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--rule);
+}
+.docbody thead th {
+  font: 700 0.7rem var(--mono); letter-spacing: 0.06em; text-transform: uppercase;
+  border-bottom: 2px solid var(--rule-hard); white-space: nowrap;
+}
+
+/* ── Desktop: the sidebar stops scrolling with the page ── */
+@media (min-width: 1024px) {
+  body.doc {
+    display: grid;
+    grid-template-columns: 17rem minmax(0, 1fr);
+    align-items: start;
+  }
+  .docside {
+    position: sticky; top: 0;
+    height: 100vh; height: 100dvh;
+    overflow-y: auto; overscroll-behavior: contain;
+    border-bottom: none; border-right: 1px solid var(--rule);
+    padding: 1.5rem 1.25rem;
+    align-content: start;
+  }
+  .toc { display: block; overflow: visible; }
+  .toc__g > ul { display: block; }
+  .toc__g { margin-bottom: 0.5rem; }
+
+  .docbody { padding: 2.5rem clamp(2rem, 5vw, 4rem) 6rem; }
+}
+
+@media (min-width: 1500px) {
+  body.doc { grid-template-columns: 19rem minmax(0, 1fr); }
+  .docbody { margin-inline: auto; }
+}
+
+#m-canvas { width: 100%; height: auto; aspect-ratio: 16 / 10; display: block; }
+#m-dial { width: 70%; max-width: 260px; display: block; margin: 0 auto; }
+#m-needle { transform-origin: 50px 50px; transition: transform 80ms linear; }
+#m-needle.unzeroed { opacity: 0.3; }
+#m-deg { text-align: center; }
+
+/* ── Drive instrument panel ──────────────────────────────────────────────
+   The Drive tab read as two boxes of form controls; it is now a cluster that
+   reshapes itself per drive mode, with the drag surfaces at the bottom of the
+   cluster where a thumb finds them without looking.
+
+   Three rules here are safety, not taste:
+
+   1. `touch-action: none` is on the four drag surfaces — the two throttles,
+      steering and the tank pad — and nowhere else. Put it on the panel or the
+      tab and pinch-zoom dies on the whole page.
+   2. Nothing draggable comes within 24px of the screen edge, because the
+      browser's back-swipe is chrome no CSS disables and only geometry defends
+      against it. main's 0.75rem plus the panel's 0.75rem already place the
+      cluster 24px in; #d-cluster's own padding clears that boundary rather
+      than sitting on it.
+   3. No transitions on anything a finger drags. A control that eases toward
+      the finger is a control that lags the car.
+
+   Every moving part is positioned from a custom property on its own root, so
+   the panel module writes one number and the stylesheet owns the geometry:
+   `--v` on #d-throttle, #d-throttleB, #d-steer and each mirror fill, −100…100;
+   `--x`/`--y` on #d-pad, likewise. Zero is the middle of every bar and the top
+   of the arc, so a control at rest looks the same everywhere.
+
+   Mode shaping is `data-mode` plus the `hidden` attribute, the mechanism the
+   whole app already uses. The layout rules below key off `:has(… :not([hidden]))`
+   rather than off a mode class, so the stylesheet needs no second copy of the
+   mode table to drift from the first.
+   ───────────────────────────────────────────────────────────────────────── */
+
+#d-warn {
+  margin: 0;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--danger); border-radius: var(--radius);
+  color: var(--danger-text);
+  font: 400 0.75rem var(--mono); line-height: 1.45;
+}
+#d-warn:empty { display: none; }
+
+/* Compact enough to sit on the heading's line without becoming the loudest
+   thing in a panel whose subject is the car. */
+#d-measure {
+  padding: 0.35rem 0.6rem; min-height: 32px;
+  font: 700 0.62rem var(--mono);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+#d-att { text-align: center; }
+#d-measure-note { margin: 0; }
+#d-measure-note:empty { display: none; }
+
+#d-cluster { display: grid; gap: var(--row-gap); padding-inline: 4px; }
+
+/* One equal column per gauge that is actually on screen — two in most modes,
+   three in independent — rather than a fixed track count the mode table would
+   have to be kept in step with. */
+.d-gauges {
+  display: grid;
+  grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
+  gap: var(--gap); align-items: end;
+}
+.d-gauge { display: grid; justify-items: center; align-content: end; gap: 0.4rem; }
+.d-val { font: 700 1.05rem var(--mono); font-variant-numeric: tabular-nums; }
+.d-val--big { font-size: 2.1rem; line-height: 1; }
+/* Three columns at 320px leave ~79px each, and "−100" at 2.1rem does not fit
+   in that. */
+.d-gauges:has(.d-gauge[data-mode]:not([hidden])) .d-val--big { font-size: 1.5rem; }
+
+/* The shipped geometry: centre (50,50), radius 44, zero at the top. The bug
+   rotates about the dial centre, which is what transform-origin buys — without
+   it the bug orbits the SVG origin. */
+#d-dial { width: 100%; max-width: 170px; display: block; }
+#d-dial-bug { transform-origin: 50px 50px; }
+#d-dial.unzeroed,
+#d-dial-fill.unzeroed,
+#d-dial-bug.unzeroed { opacity: 0.3; }
+
+/* ── The drag surfaces ── */
+#d-throttle, #d-throttleB, #d-steer, #d-pad {
+  touch-action: none;
+  user-select: none; -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.d-drive {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px;
+  gap: 0.6rem;
+  min-height: 168px;
+}
+
+/* Independent drives motor A and motor B from two separate axes, so it needs
+   two throttles, and it still commands the steer motor
+   (`src/gamepad-controller.js` independent branch) — three drag surfaces.
+
+   Side by side in one row they would leave steering 115px of travel at 320px.
+   Stacked, each throttle gets 126px of width and steering gets the full 262px:
+   more travel than it has in the other modes, not less. Travel is the governing
+   dimension for a drag control, not target area. */
+.d-drive:has(#d-throttleB:not([hidden])) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: 168px 56px;
+}
+.d-drive:has(#d-throttleB:not([hidden])) #d-throttle { grid-area: 1 / 1; }
+.d-drive:has(#d-throttleB:not([hidden])) #d-throttleB { grid-area: 1 / 2; }
+.d-drive:has(#d-throttleB:not([hidden])) #d-steer { grid-area: 2 / 1 / 3 / 3; }
+
+#d-steer, #d-throttle, #d-throttleB {
+  --v: 0;
+  position: relative;
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: var(--sunken);
+}
+
+.d-steer__mid, .d-throttle__zero { position: absolute; background: var(--rule); }
+.d-steer__mid { top: 0; bottom: 0; left: 50%; width: 1px; }
+.d-throttle__zero { left: 0; right: 0; top: 50%; height: 1px; }
+
+.d-steer__fill, .d-throttle__fill {
+  position: absolute;
+  background: var(--accent);
+  border: 1px solid var(--accent-edge); border-radius: 2px;
+}
+.d-steer__fill {
+  top: 3px; bottom: 3px;
+  left: calc(50% + min(var(--v, 0), 0) * 0.5%);
+  right: calc(50% - max(var(--v, 0), 0) * 0.5%);
+}
+.d-throttle__fill {
+  left: 3px; right: 3px;
+  top: calc(50% - max(var(--v, 0), 0) * 0.5%);
+  bottom: calc(50% + min(var(--v, 0), 0) * 0.5%);
+}
+
+/* The knob overhangs its track by 2px on the cross axis, so the thing the eye
+   tracks is the knob rather than the end of the fill. */
+.d-steer__knob, .d-throttle__knob {
+  position: absolute;
+  border: 2px solid var(--rule-hard); border-radius: var(--radius);
+  background: var(--paper);
+}
+.d-steer__knob {
+  top: -2px; bottom: -2px; width: 34px;
+  left: calc(50% + var(--v, 0) * 0.5%);
+  transform: translateX(-50%);
+}
+.d-throttle__knob {
+  left: -2px; right: -2px; height: 26px;
+  top: calc(50% - var(--v, 0) * 0.5%);
+  transform: translateY(-50%);
+}
+
+/* ── Tracked: one pad mixes both tracks ── */
+#d-pad {
+  --x: 0; --y: 0;
+  position: relative;
+  width: 100%; max-width: 300px; margin-inline: auto;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: var(--sunken);
+}
+.d-pad__cross {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(var(--rule), var(--rule)) center / 100% 1px no-repeat,
+    linear-gradient(var(--rule), var(--rule)) center / 1px 100% no-repeat;
+}
+/* The rest position, drawn — a pad whose puck has been dragged away still says
+   where zero was. */
+.d-pad__ring {
+  position: absolute; left: 50%; top: 50%;
+  width: 56px; height: 56px; margin: -28px 0 0 -28px;
+  border: 1px dashed var(--rule); border-radius: 50%;
+}
+#d-pad-puck {
+  position: absolute;
+  width: 56px; height: 56px;
+  left: calc(50% + var(--x, 0) * 0.5%);
+  top: calc(50% - var(--y, 0) * 0.5%);
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--rule-hard); border-radius: 50%;
+  background: var(--accent); color: var(--accent-ink);
+  display: flex; align-items: center; justify-content: center;
+  font: 700 0.6rem var(--mono); letter-spacing: 0.08em;
+}
+
+/* ── Mirrors ──
+   Read-only: what the mix actually sent to each output. Ink, not accent — the
+   accent means a control is engaged, and these are not controls. */
+.d-mirrors { display: grid; gap: 0.4rem; }
+.d-mir { display: flex; align-items: center; gap: 0.6rem; }
+.d-mir .lights-head { flex: 0 0 3.6rem; }
+.mir {
+  position: relative; flex: 1 1 auto;
+  height: 14px;
+  border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--sunken);
+}
+.mir__mid { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--rule); }
+.mir__fill {
+  position: absolute; top: 2px; bottom: 2px;
+  left: calc(50% + min(var(--v, 0), 0) * 0.5%);
+  right: calc(50% - max(var(--v, 0), 0) * 0.5%);
+  background: var(--ink-soft); border-radius: 1px;
+}

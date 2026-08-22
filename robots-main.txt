@@ -1,0 +1,10 @@
+# Everything here is public and worth indexing, including by the assistants
+# people now ask instead of searching.
+User-agent: *
+Allow: /
+
+Sitemap: https://move-hub.site/sitemap.xml
+
+# llms.txt is not part of robots.txt, but naming it here is the cheapest way
+# for a crawler that already fetched this file to find it.
+# https://move-hub.site/llms.txt

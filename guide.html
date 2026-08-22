@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Controls guide — Technic Move Hub Controller</title>
+  <meta name="description" content="What every button, slider and dropdown does in the Technic Move Hub browser controller, in plain language." />
+  <link rel="canonical" href="https://move-hub.site/guide" />
+  <meta name="color-scheme" content="light dark" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Controls guide — Technic Move Hub Controller" />
+  <meta property="og:description" content="What every button, slider and dropdown does, in plain language." />
+  <meta property="og:url" content="https://move-hub.site/guide" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121212" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body class="doc">
+  <!-- Generated from docs/GUIDE.md by scripts/build-guide.mjs. Edit the markdown,
+       not this file. -->
+  <aside class="docside">
+    <a class="back" href="/">← Controller</a>
+    <form class="find" role="search" onsubmit="return false">
+      <input id="find" type="search" placeholder="Search 90 controls"
+             autocomplete="off" aria-label="Search the guide" />
+      <p id="find-count" class="find__count" role="status" aria-live="polite"></p>
+    </form>
+    <nav aria-label="Contents">
+      <ul class="toc">
+        <li class="toc__g">
+          <a href="#g-always-on-screen">Always on screen</a>
+          <ul>
+            <li><a href="#g-connect-hub">Connect hub</a></li>
+            <li><a href="#g-connect-a-hub-large-button-on-the-landing-page">Connect a hub (large button on the landing page)</a></li>
+            <li><a href="#g-status-chip-coloured-dot-plus-a-short-line-of-text">Status chip (coloured dot plus a short line of text)</a></li>
+            <li><a href="#g-battery-reading">Battery reading</a></li>
+            <li><a href="#g-pad-off-pad-armed">pad: OFF / pad: ARMED</a></li>
+            <li><a href="#g-tab-bar-drive-setup-lights-hub-motion-macros-debug">Tab bar: Drive, Setup, Lights, Hub, Motion, Macros, Debug</a></li>
+          </ul>
+        </li>
+        <li class="toc__g">
+          <a href="#g-drive-tab">Drive tab</a>
+          <ul>
+            <li><a href="#g-steering-readout">Steering readout</a></li>
+            <li><a href="#g-mode-raw-steer">mode (Raw / Steer)</a></li>
+            <li><a href="#g-center">Center</a></li>
+            <li><a href="#g-left-and-right">◀ LEFT and RIGHT ▶</a></li>
+            <li><a href="#g-drive-a-and-drive-b-rows">Drive A and Drive B rows</a></li>
+            <li><a href="#g-measured">Measured</a></li>
+            <li><a href="#g-drive-behaviour-mode">Drive behaviour → mode</a></li>
+            <li><a href="#g-drive-behaviour-on-release">Drive behaviour → on release</a></li>
+            <li><a href="#g-live-readout">Live readout</a></li>
+          </ul>
+        </li>
+        <li class="toc__g">
+          <a href="#g-setup-tab">Setup tab</a>
+          <ul>
+            <li><a href="#g-steering-calibration-set-zero">Steering calibration → Set zero</a></li>
+            <li><a href="#g-turn-speed">turn speed</a></li>
+            <li><a href="#g-advanced-steering-fold-out">Advanced steering (fold-out)</a></li>
+            <li><a href="#g-motor-direction">Motor direction</a></li>
+            <li><a href="#g-steer-jog-mechanical-alignment">Steer jog — mechanical alignment</a></li>
+            <li><a href="#g-gamepad-feel-axes-readout">Gamepad feel → axes readout</a></li>
+            <li><a href="#g-deadzone">deadzone</a></li>
+            <li><a href="#g-expo">expo</a></li>
+            <li><a href="#g-max-speed">max speed</a></li>
+            <li><a href="#g-steer-gain">steer gain</a></li>
+            <li><a href="#g-accel">accel</a></li>
+            <li><a href="#g-accel-rate">accel rate</a></li>
+            <li><a href="#g-button-mapping-fold-out">Button mapping (fold-out)</a></li>
+          </ul>
+        </li>
+        <li class="toc__g">
+          <a href="#g-lights-tab">Lights tab</a>
+          <ul>
+            <li><a href="#g-lamps-1-to-6">Lamps 1 to 6</a></li>
+            <li><a href="#g-brightness">brightness</a></li>
+            <li><a href="#g-all-on-all-off">All on / All off</a></li>
+            <li><a href="#g-chase-16-diagnostic">Chase 1→6 (diagnostic)</a></li>
+            <li><a href="#g-status-led-red-green-blue-yellow-off">Status LED: Red, Green, Blue, Yellow, Off</a></li>
+          </ul>
+        </li>
+        <li class="toc__g">
+          <a href="#g-hub-tab">Hub tab</a>
+          <ul>
+            <li><a href="#g-connection-status">Connection status</a></li>
+            <li><a href="#g-discovered-ports-fold-out">Discovered ports (fold-out)</a></li>
+            <li><a href="#g-refresh-battery">refresh battery</a></li>
+            <li><a href="#g-telemetry-off-on">telemetry: OFF / ON</a></li>
+            <li><a href="#g-crash-guard-off-on">crash guard: OFF / ON</a></li>
+            <li><a href="#g-tilt-readout">tilt readout</a></li>
+          </ul>
+        </li>
+        <li class="toc__g">
+          <a href="#g-motion-tab">Motion tab</a>
+          <ul>
+            <li><a href="#g-attitude">Attitude</a></li>
+            <li><a href="#g-centre-here">Centre here</a></li>
+            <li><a href="#g-steering">Steering</a></li>
+          </ul>
+        </li>
+        <li class="toc__g">
+          <a href="#g-macros-tab">Macros tab</a>
+          <ul>
+            <li><a href="#g-macro-slot">Macro slot</a></li>
+            <li><a href="#g-source">Source</a></li>
+            <li><a href="#g-unsafe">unsafe</a></li>
+            <li><a href="#g-run-stop">Run / Stop</a></li>
+            <li><a href="#g-elapsed-status">elapsed / status</a></li>
+            <li><a href="#g-methods">Methods</a></li>
+            <li><a href="#g-donut-bumper-sweep">donut / bumper / sweep</a></li>
+            <li><a href="#g-export-import">Export / Import</a></li>
+            <li><a href="#g-the-macro-language">The macro language</a></li>
+            <li><a href="#g-drivespeed-steer">drive(speed, steer)</a></li>
+            <li><a href="#g-driveforspeed-steer-ms">driveFor(speed, steer, ms)</a></li>
+            <li><a href="#g-stopdrive">stopDrive()</a></li>
+            <li><a href="#g-lightsmode">lights(mode)</a></li>
+            <li><a href="#g-motorforport-speed-ms">motorFor(port, speed, ms)</a></li>
+            <li><a href="#g-throttleforspeed-ms">throttleFor(speed, ms)</a></li>
+            <li><a href="#g-tankforleft-right-ms">tankFor(left, right, ms)</a></li>
+            <li><a href="#g-brakeport">brake(port)</a></li>
+            <li><a href="#g-brakeall">brakeAll()</a></li>
+            <li><a href="#g-coastport">coast(port)</a></li>
+            <li><a href="#g-steerinput">steer(input)</a></li>
+            <li><a href="#g-steerzero">steerZero()</a></li>
+            <li><a href="#g-steerpos">steerPos()</a></li>
+            <li><a href="#g-lampsmask-brightness">lamps(mask, brightness)</a></li>
+            <li><a href="#g-ledcolour">led(colour)</a></li>
+            <li><a href="#g-tilttimeoutms">tilt(timeoutMs)</a></li>
+            <li><a href="#g-acceltimeoutms">accel(timeoutMs)</a></li>
+            <li><a href="#g-batterytimeoutms">battery(timeoutMs)</a></li>
+            <li><a href="#g-motorspeedport-timeoutms">motorSpeed(port, timeoutMs)</a></li>
+            <li><a href="#g-motorposport-timeoutms">motorPos(port, timeoutMs)</a></li>
+            <li><a href="#g-ports">ports()</a></li>
+            <li><a href="#g-waitms">wait(ms)</a></li>
+            <li><a href="#g-waituntilpredicate-timeoutms-pollms">waitUntil(predicate, timeoutMs, pollMs)</a></li>
+            <li><a href="#g-waitforname-timeoutms">waitFor(name, timeoutMs)</a></li>
+            <li><a href="#g-modename">mode(name)</a></li>
+            <li><a href="#g-collisionmode">collision(mode)</a></li>
+            <li><a href="#g-collisionthresholdmg">collisionThreshold(mg)</a></li>
+            <li><a href="#g-printargs">print(...args)</a></li>
+            <li><a href="#g-unsaferawbytes-key">unsafe.raw(bytes, key)</a></li>
+            <li><a href="#g-unsafewritedirectport-mode-values">unsafe.writeDirect(port, mode, values)</a></li>
+            <li><a href="#g-unsafesubscribeport-mode-delta">unsafe.subscribe(port, mode, delta)</a></li>
+            <li><a href="#g-unsafeunsubscribeport-mode">unsafe.unsubscribe(port, mode)</a></li>
+            <li><a href="#g-unsafegotopositionport-angle-speed-maxpower-endstate">unsafe.gotoPosition(port, angle, speed, maxPower, endState)</a></li>
+            <li><a href="#g-unsafespeedfordegreesport-degrees-speed-maxpower-endstate">unsafe.speedForDegrees(port, degrees, speed, maxPower, endState)</a></li>
+            <li><a href="#g-unsafelinkdrivemotors">unsafe.linkDriveMotors()</a></li>
+            <li><a href="#g-unsafeunlinkdrivemotors">unsafe.unlinkDriveMotors()</a></li>
+          </ul>
+        </li>
+        <li class="toc__g">
+          <a href="#g-debug-tab">Debug tab</a>
+          <ul>
+            <li><a href="#g-debug-log">Debug log</a></li>
+            <li><a href="#g-raw-port-probe-fold-out-can-drop-the-hub-connection">Raw port probe (fold-out, "can drop the hub connection")</a></li>
+            <li><a href="#g-port-introspection-read-only-fold-out">Port introspection — read-only (fold-out)</a></li>
+          </ul>
+        </li>
+        <li class="toc__g">
+          <a href="#g-when-something-is-wrong">When something is wrong</a>
+          <ul>
+
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <main class="docbody">
+<h1 id="g-controls-guide">Controls guide</h1>
+<p>This page drives a LEGO Technic Move Hub from a browser tab. Everything below is a control you can see on screen: what it does, when you would use it, and where it can bite.</p>
+<p>A few words come up often, so they are explained once here:</p>
+<ul>
+<li><strong>Hub</strong> — the grey brick with the motors inside it. The page talks to it directly over Bluetooth.</li>
+<li><strong>Bluetooth</strong> — the short-range radio link between your phone or computer and the hub. No pairing in system settings is needed; the browser handles it.</li>
+<li><strong>Drive motor A and B</strong> — the two motors that turn the wheels.</li>
+<li><strong>Steer motor</strong> — the separate motor that turns the front wheels left and right.</li>
+<li><strong>Motion sensors</strong> — the hub contains sensors that measure tilt and sudden movement. The page calls these telemetry.</li>
+</ul>
+<section class="group"><h2 id="g-always-on-screen">Always on screen</h2>
+<p>These sit outside the tabs, so they are reachable no matter which section you are looking at.</p>
+<section class="ctrl" data-t="connect hub what it does. opens the browser's bluetooth device chooser so you can pick your hub. once a hub is attached, this button disappears and the status chip, battery, pad button, tab bar and the dashboard all appear in its place. when you'd use it. once, at the start of every session. watch out. connecting calibrates the steering: the hub sweeps the front wheels to both ends of their travel. lift the model or leave the wheels free before you press it. it works in this order: the browser shows you its own list of nearby bluetooth devices, you pick the hub, and the page then reads what the hub says about itself — how many motors, which lamps, which sensors — before the dashboard appears. nothing is remembered between sessions, so you pick it each time.">
+<h3 id="g-connect-hub">Connect hub</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Opens the browser's Bluetooth device chooser so you can pick your hub. Once a hub is attached, this button disappears and the status chip, battery, pad button, tab bar and the dashboard all appear in its place.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Once, at the start of every session.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Connecting calibrates the steering: the hub sweeps the front wheels to both ends of their travel. Lift the model or leave the wheels free before you press it.</p>
+<p>It works in this order: the browser shows you its own list of nearby Bluetooth devices, you pick the hub, and the page then reads what the hub says about itself — how many motors, which lamps, which sensors — before the dashboard appears. Nothing is remembered between sessions, so you pick it each time.</p>
+</section>
+<section class="ctrl" data-t="connect a hub (large button on the landing page) what it does. the same thing as connect hub, offered in the middle of the introduction page so you do not have to hunt for the small one. the whole introduction page disappears once a hub is attached. both buttons run the same connect.">
+<h3 id="g-connect-a-hub-large-button-on-the-landing-page">Connect a hub (large button on the landing page)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>The same thing as Connect hub, offered in the middle of the introduction page so you do not have to hunt for the small one. The whole introduction page disappears once a hub is attached.</p>
+<p>Both buttons run the same connect.</p>
+</section>
+<section class="ctrl" data-t="status chip (coloured dot plus a short line of text) what it does. shows the state of the link to the hub. tapping it jumps straight to the hub tab, where the full status text lives. when you'd use it. whenever you want to know why something is not responding. the dot is green when the link is healthy, amber for a warning — a detected collision, for example — and red when the hub has gone. when everything is fine the dot stands alone; words appear beside it only when something is wrong, which keeps the bar clear while you drive.">
+<h3 id="g-status-chip-coloured-dot-plus-a-short-line-of-text">Status chip (coloured dot plus a short line of text)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Shows the state of the link to the hub. Tapping it jumps straight to the <strong>Hub</strong> tab, where the full status text lives.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Whenever you want to know why something is not responding.</p>
+<p>The dot is green when the link is healthy, amber for a warning — a detected collision, for example — and red when the hub has gone. When everything is fine the dot stands alone; words appear beside it only when something is wrong, which keeps the bar clear while you drive.</p>
+</section>
+<section class="ctrl" data-t="battery reading what it does. shows the hub's remaining charge as a percentage. a small q followed by a number sometimes appears next to it — that is the number of commands waiting to be sent, refreshed four times a second. it is hidden whenever the number is zero. watch out. a q number that keeps climbing means commands are backing up faster than the hub can take them. that is usually the first sign of a link about to fail.">
+<h3 id="g-battery-reading">Battery reading</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Shows the hub's remaining charge as a percentage. A small <code>q</code> followed by a number sometimes appears next to it — that is the number of commands waiting to be sent, refreshed four times a second. It is hidden whenever the number is zero.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>A <code>q</code> number that keeps climbing means commands are backing up faster than the hub can take them. That is usually the first sign of a link about to fail.</p>
+</section>
+<section class="ctrl" data-t="pad: off / pad: armed what it does. turns the gamepad control loop on and off. when it reads armed, your game controller is driving the car. the short text beside it is the first part of the controller's name, or &quot;not connected&quot; if the browser cannot see a pad. when you'd use it. every time you want to drive with a controller, and again to stop. watch out. arming the pad means the car can move without you touching the screen. the loop disarms itself if the link drops, on a collision, or on any error inside the loop.">
+<h3 id="g-pad-off-pad-armed">pad: OFF / pad: ARMED</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Turns the gamepad control loop on and off. When it reads ARMED, your game controller is driving the car. The short text beside it is the first part of the controller's name, or "not connected" if the browser cannot see a pad.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Every time you want to drive with a controller, and again to stop.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Arming the pad means the car can move without you touching the screen. The loop disarms itself if the link drops, on a collision, or on any error inside the loop.</p>
+</section>
+<section class="ctrl" data-t="tab bar: drive, setup, lights, hub, motion, macros, debug what it does. switches between the seven sections. the current one is underlined. on a keyboard, the number keys 1 to 7 do the same thing, in that order. watch out. the number keys are ignored while you are typing in a text box, so the debug tab's fields still work normally.">
+<h3 id="g-tab-bar-drive-setup-lights-hub-motion-macros-debug">Tab bar: Drive, Setup, Lights, Hub, Motion, Macros, Debug</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Switches between the seven sections. The current one is underlined. On a keyboard, the number keys 1 to 7 do the same thing, in that order.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>The number keys are ignored while you are typing in a text box, so the Debug tab's fields still work normally.</p>
+</section>
+</section>
+<section class="group"><h2 id="g-drive-tab">Drive tab</h2>
+<p>Everything you touch while the car is moving.</p>
+<section class="ctrl" data-t="steering readout not a control. it reads pos 0 → 0: the steer motor's current position, then the position it is being asked to hold. if it also says (set zero!) the steering has no reference point yet — see set zero in the setup tab.">
+<h3 id="g-steering-readout">Steering readout</h3>
+<p>Not a control. It reads <code>pos 0 → 0</code>: the steer motor's current position, then the position it is being asked to hold. If it also says <code>(set zero!)</code> the steering has no reference point yet — see <strong>Set zero</strong> in the Setup tab.</p>
+</section>
+<section class="ctrl" data-t="mode (raw / steer) what it does. chooses how the steering motor is commanded. raw — stick drives motor power (the default). your input becomes motor power directly. push harder, the motor turns faster. let go, it stops. steer — hold an angle (needs a zero). your input becomes a target angle, and the motor works to hold that angle against the springs and the road. if you have not set a zero point yet, switching to this mode captures one from wherever the wheels are standing. when you'd use it. raw is the safe default and always works. steer gives you proportional, self-centring steering once the wheels are calibrated. watch out. this dropdown reports what is actually running rather than what you last chose. if the steering runs away or loses its position feedback, it drops itself back to raw and the dropdown will change on its own. switching from steer back to raw also stops the steer motor, so it is never left pushing.">
+<h3 id="g-mode-raw-steer">mode (Raw / Steer)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Chooses how the steering motor is commanded.</p>
+<ul>
+<li><strong>Raw — stick drives motor power</strong> (the default). Your input becomes motor power directly. Push harder, the motor turns faster. Let go, it stops.</li>
+<li><strong>Steer — hold an angle (needs a zero)</strong>. Your input becomes a target angle, and the motor works to hold that angle against the springs and the road. If you have not set a zero point yet, switching to this mode captures one from wherever the wheels are standing.</li>
+</ul>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Raw is the safe default and always works. Steer gives you proportional, self-centring steering once the wheels are calibrated.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>This dropdown reports what is actually running rather than what you last chose. If the steering runs away or loses its position feedback, it drops itself back to Raw and the dropdown will change on its own. Switching from Steer back to Raw also stops the steer motor, so it is never left pushing.</p>
+</section>
+<section class="ctrl" data-t="center what it does. commands the steering back to its zero position. when you'd use it. to straighten the wheels before you set off.">
+<h3 id="g-center">Center</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Commands the steering back to its zero position.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>To straighten the wheels before you set off.</p>
+</section>
+<section class="ctrl" data-t="◀ left and right ▶ what it does. press and hold to steer. in raw mode the button spins the steer motor for as long as you hold it. in steer mode it commands full lock in that direction, and releasing hands control back — which, with auto-return on, means the wheels come back to centre. watch out. releasing is detected in every way the finger can leave the button, including sliding off the edge, so a motor cannot be left running by a missed release.">
+<h3 id="g-left-and-right">◀ LEFT and RIGHT ▶</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Press and hold to steer. In Raw mode the button spins the steer motor for as long as you hold it. In Steer mode it commands full lock in that direction, and releasing hands control back — which, with auto-return on, means the wheels come back to centre.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Releasing is detected in every way the finger can leave the button, including sliding off the edge, so a motor cannot be left running by a missed release.</p>
+</section>
+<section class="ctrl" data-t="drive a and drive b rows each drive motor gets its own row, built from whatever the hub reports it has. the row heading shows the motor's name, its port number, and its live speed. power — a slider from 10 to 100, starting at 50. it sets how hard the fwd and rev buttons below it push. it does not move anything on its own. fwd ▲ / rev ▼ — press and hold to run that motor forward or backward at the power set above. releasing sends a stop. when you'd use it. testing a build on the bench, or nudging the model without a gamepad. watch out. when the hub has fused the two drive motors into a single unit — which it does in the default drive behaviour — both rows are routed to that combined unit, because addressing an individual motor at the same time confuses the hub. expect both rows to move both motors in that situation.">
+<h3 id="g-drive-a-and-drive-b-rows">Drive A and Drive B rows</h3>
+<p>Each drive motor gets its own row, built from whatever the hub reports it has. The row heading shows the motor's name, its port number, and its live speed.</p>
+<ul>
+<li><strong>power</strong> — a slider from 10 to 100, starting at 50. It sets how hard the FWD and REV buttons below it push. It does not move anything on its own.</li>
+<li><strong>FWD ▲ / REV ▼</strong> — press and hold to run that motor forward or backward at the power set above. Releasing sends a stop.</li>
+</ul>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Testing a build on the bench, or nudging the model without a gamepad.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>When the hub has fused the two drive motors into a single unit — which it does in the default drive behaviour — both rows are routed to that combined unit, because addressing an individual motor at the same time confuses the hub. Expect both rows to move both motors in that situation.</p>
+</section>
+<section class="ctrl" data-t="measured what it does. switches on a live attitude readout that sits with the drive controls: roll — · pitch — · yaw — becomes three angles from the hub's orientation sensor, with the steer motor's position on a second line. off by default, and remembered between sessions. when you'd use it. when you want the numbers while you are driving, without leaving the drive tab for the motion tab. watch out. switching it on subscribes to two streams — the orientation sensor and the steer motor's position — and the hub is sensitive to how many subscriptions are running. the warning under telemetry in the hub tab applies here too. watch out. a port can only report one thing at a time. if the debug tab's probe or the motion tab already holds a stream, the note under the readout says stream unavailable: and names which one failed; the rest still works. the steer line reads — (set zero in setup) until the steering has a reference point. the angles here are the hub's own, uncorrected: unlike the motion tab there is no centre here, so how the brick is mounted in the model shows up in the numbers.">
+<h3 id="g-measured">Measured</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Switches on a live attitude readout that sits with the drive controls: <code>roll — · pitch — · yaw —</code> becomes three angles from the hub's orientation sensor, with the steer motor's position on a second line. Off by default, and remembered between sessions.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>When you want the numbers while you are driving, without leaving the Drive tab for the Motion tab.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Switching it on subscribes to two streams — the orientation sensor and the steer motor's position — and the hub is sensitive to how many subscriptions are running. The warning under <strong>telemetry</strong> in the Hub tab applies here too.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>A port can only report one thing at a time. If the Debug tab's probe or the Motion tab already holds a stream, the note under the readout says <code>stream unavailable:</code> and names which one failed; the rest still works.</p>
+<p>The steer line reads <code>— (set zero in Setup)</code> until the steering has a reference point. The angles here are the hub's own, uncorrected: unlike the Motion tab there is no <strong>Centre here</strong>, so how the brick is mounted in the model shows up in the numbers.</p>
+</section>
+<section class="ctrl" data-t="drive behaviour → mode what it does. chooses how your gamepad's inputs are turned into motor commands. option what it does typical module behaviour — the hub drives itself (default) sends speed, steering and lights as one combined instruction and lets the hub work out the rest. this is how the lego app drives the model. linked — both motors together both drive motors run as one, and the steering is commanded separately by this page. independent — a on triggers, b on stick the two drive motors are controlled separately: motor a from the triggers, motor b from the right stick. tracked — one stick, tank steering one stick drives both motors; pushing it sideways counter-rotates them so the model turns on the spot, the way a tracked vehicle does. the steer motor is left free on the other stick for whatever your build uses it for. combined frame thirteen bytes 0d 00 81 36 11 51 00 03 00 00 00 04 00 drive port speed steering lights that is the combined instruction, at rest. three of its thirteen bytes change while you drive — speed, steering and the lights — and the hub holds the steering angle on its own between writes, which is what the first option means by letting the hub work the rest out. the lights byte does a second job: the two commands that arm the port travel in that field, which is why choosing this option sweeps the rack before anything moves. watch out. choosing the first option arms the combined instruction, which sweeps the steering rack and takes a few seconds. the readout below tells you it is happening. if the hub refuses, the page falls back to linked by itself and says why. watch out. tracked mode needs one of the two drive motors set to reversed in setup, because they are mounted facing opposite ways. without it, turning and throttle come out swapped, and the page will tell you so in the readout.">
+<h3 id="g-drive-behaviour-mode">Drive behaviour → mode</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Chooses how your gamepad's inputs are turned into motor commands.</p>
+<div class="scroller"><table><thead><tr><th>Option</th><th>What it does</th></tr></thead><tbody>
+<tr><td><strong>Typical module behaviour — the hub drives itself</strong> (default)</td><td>Sends speed, steering and lights as one combined instruction and lets the hub work out the rest. This is how the LEGO app drives the model.</td></tr>
+<tr><td><strong>Linked — both motors together</strong></td><td>Both drive motors run as one, and the steering is commanded separately by this page.</td></tr>
+<tr><td><strong>Independent — A on triggers, B on stick</strong></td><td>The two drive motors are controlled separately: motor A from the triggers, motor B from the right stick.</td></tr>
+<tr><td><strong>Tracked — one stick, tank steering</strong></td><td>One stick drives both motors; pushing it sideways counter-rotates them so the model turns on the spot, the way a tracked vehicle does. The steer motor is left free on the other stick for whatever your build uses it for.</td></tr>
+</tbody></table></div>
+<figure class="wire" aria-label="The combined drive frame: thirteen bytes carrying speed, steering and lights in a single write"><div class="wire__scroll"><div class="wire__grid"><div class="wire__ruler" aria-hidden="true"><span>00</span><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span><span>07</span><span>08</span><span>09</span><span>0a</span><span>0b</span><span>0c</span></div><div class="wire__bytes" role="img" aria-label="A thirteen byte LEGO Wireless Protocol frame at rest: 0d 00 81 36 11 51 00 03 00 00 00 04 00"><span>0d</span><span>00</span><span class="k">81</span><span class="k">36</span><span>11</span><span>51</span><span>00</span><span>03</span><span>00</span><span class="v-speed">00</span><span class="v-steer">00</span><span class="v-light">04</span><span>00</span></div><div class="wire__marks" aria-hidden="true"><span class="m-port">write to the drive port</span><span class="m-speed">speed</span><span class="m-steer">steer</span><span class="m-light">lights</span></div></div></div></figure>
+<p>That is the combined instruction, at rest. Three of its thirteen bytes change while you drive — speed, steering and the lights — and the hub holds the steering angle on its own between writes, which is what the first option means by letting the hub work the rest out. The lights byte does a second job: the two commands that arm the port travel in that field, which is why choosing this option sweeps the rack before anything moves.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Choosing the first option arms the combined instruction, which sweeps the steering rack and takes a few seconds. The readout below tells you it is happening. If the hub refuses, the page falls back to <strong>Linked</strong> by itself and says why.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Tracked mode needs one of the two drive motors set to REVERSED in Setup, because they are mounted facing opposite ways. Without it, turning and throttle come out swapped, and the page will tell you so in the readout.</p>
+</section>
+<section class="ctrl" data-t="drive behaviour → on release what it does. decides what a motor does when a control returns to zero. option what it does brake — stop dead (default) the motor resists turning and the model stops where it is. coast — free-wheel power is simply removed and the model rolls to a stop. when you'd use it. coast feels more natural on a car; brake is better for precise positioning and on a slope. watch out. changing this applies to every motor at once, and it re-sends a stop immediately so you feel the new behaviour straight away rather than on the next release.">
+<h3 id="g-drive-behaviour-on-release">Drive behaviour → on release</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Decides what a motor does when a control returns to zero.</p>
+<div class="scroller"><table><thead><tr><th>Option</th><th>What it does</th></tr></thead><tbody>
+<tr><td><strong>Brake — stop dead</strong> (default)</td><td>The motor resists turning and the model stops where it is.</td></tr>
+<tr><td><strong>Coast — free-wheel</strong></td><td>Power is simply removed and the model rolls to a stop.</td></tr>
+</tbody></table></div>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Coast feels more natural on a car; brake is better for precise positioning and on a slope.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Changing this applies to every motor at once, and it re-sends a stop immediately so you feel the new behaviour straight away rather than on the next release.</p>
+</section>
+<section class="ctrl" data-t="live readout not a control. reads a 0 · steer 0 · trim 0 and shows what the gamepad is currently commanding, plus a row of filled and empty circles for the six lamps. in independent mode a second throttle figure appears. this line is also where mode-change messages and failures are printed.">
+<h3 id="g-live-readout">Live readout</h3>
+<p>Not a control. Reads <code>A 0 · steer 0 · trim 0</code> and shows what the gamepad is currently commanding, plus a row of filled and empty circles for the six lamps. In Independent mode a second throttle figure appears. This line is also where mode-change messages and failures are printed.</p>
+</section>
+</section>
+<section class="group"><h2 id="g-setup-tab">Setup tab</h2>
+<p>Calibration and set-and-forget tuning. Nothing here needs to be touched while driving.</p>
+<section class="ctrl" data-t="steering calibration → set zero what it does. records the steering motor's current position as straight ahead. everything the steering does afterwards is measured from that point. when you'd use it. after you have jogged the wheels to look straight, and any time the steering has slipped. watch out. this changes calibration, so on a gamepad it is deliberately bound to a button you must hold for a second rather than tap.">
+<h3 id="g-steering-calibration-set-zero">Steering calibration → Set zero</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Records the steering motor's current position as straight ahead. Everything the steering does afterwards is measured from that point.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>After you have jogged the wheels to look straight, and any time the steering has slipped.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>This changes calibration, so on a gamepad it is deliberately bound to a button you must hold for a second rather than tap.</p>
+</section>
+<section class="ctrl" data-t="turn speed what it does. how fast the steer motor turns. slider from 10 to 100, starting at 40. when you'd use it. lower it if the steering snaps around too abruptly for your build; raise it if it feels sluggish.">
+<h3 id="g-turn-speed">turn speed</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>How fast the steer motor turns. Slider from 10 to 100, starting at 40.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Lower it if the steering snaps around too abruptly for your build; raise it if it feels sluggish.</p>
+</section>
+<section class="ctrl" data-t="advanced steering (fold-out) what it does. hides four settings and two checkboxes that most people never need. tap the heading to open it. max angle what it does. how far from centre, in degrees, full lock is. slider from 5 to 720 in steps of 5, starting at 90°. when you'd use it. match it to your model's actual steering travel. too large and full stick will drive the rack into its end stop. kp what it does. how hard the steering pushes to correct an error between where the wheels are and where they should be. the slider runs 1 to 50 and is shown as a decimal from 0.1 to 5.0; it starts at 0.3. when you'd use it. only in steer mode. raise it if the steering is lazy about reaching the angle you asked for; lower it if the wheels twitch or oscillate around the target. watch out. setting it high makes the steering unstable rather than sharp. deadband what it does. how close to the target angle counts as &quot;close enough&quot;, in degrees. slider from 0 to 30, starting at 8°. when you'd use it. widen it if the steering never settles and keeps hunting back and forth. auto-return to zero on release what it does. when ticked, letting go of the steering brings the wheels back to straight ahead on their own. on by default. invert steering direction what it does. swaps left and right for the steering motor. off by default. when you'd use it. when pushing left turns the wheels right, because of how the steering motor is geared into your build.">
+<h3 id="g-advanced-steering-fold-out">Advanced steering (fold-out)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Hides four settings and two checkboxes that most people never need. Tap the heading to open it.</p>
+<h4 id="g-max-angle">max angle</h4>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>How far from centre, in degrees, full lock is. Slider from 5 to 720 in steps of 5, starting at 90°.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Match it to your model's actual steering travel. Too large and full stick will drive the rack into its end stop.</p>
+<h4 id="g-kp">kp</h4>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>How hard the steering pushes to correct an error between where the wheels are and where they should be. The slider runs 1 to 50 and is shown as a decimal from 0.1 to 5.0; it starts at 0.3.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Only in Steer mode. Raise it if the steering is lazy about reaching the angle you asked for; lower it if the wheels twitch or oscillate around the target.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Setting it high makes the steering unstable rather than sharp.</p>
+<h4 id="g-deadband">deadband</h4>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>How close to the target angle counts as "close enough", in degrees. Slider from 0 to 30, starting at 8°.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Widen it if the steering never settles and keeps hunting back and forth.</p>
+<h4 id="g-auto-return-to-zero-on-release">auto-return to zero on release</h4>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>When ticked, letting go of the steering brings the wheels back to straight ahead on their own. <strong>On by default.</strong></p>
+<h4 id="g-invert-steering-direction">invert steering direction</h4>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Swaps left and right for the steering motor. <strong>Off by default.</strong></p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>When pushing left turns the wheels right, because of how the steering motor is geared into your build.</p>
+</section>
+<section class="ctrl" data-t="motor direction what it does. one button per motor — drive a, drive b and steer — each reading normal or reversed. tapping one flips which way that motor counts as forward, and stops the motor as it does so. your choice is remembered on this device and comes back next time you open the page. when you'd use it. when a motor runs backwards because of how it is mounted, and for tracked drive mode, which needs one drive motor reversed.">
+<h3 id="g-motor-direction">Motor direction</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>One button per motor — Drive A, Drive B and Steer — each reading NORMAL or REVERSED. Tapping one flips which way that motor counts as forward, and stops the motor as it does so. Your choice is remembered on this device and comes back next time you open the page.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>When a motor runs backwards because of how it is mounted, and for Tracked drive mode, which needs one drive motor reversed.</p>
+</section>
+<section class="ctrl" data-t="steer jog — mechanical alignment what it does. two press-and-hold buttons, jog ◀ and jog ▶, that turn the steer motor at a fixed gentle speed regardless of any other setting. when you'd use it. to physically line up the front wheels straight before pressing set zero. these duplicate the drive tab's left and right buttons and exist here only for that alignment job.">
+<h3 id="g-steer-jog-mechanical-alignment">Steer jog — mechanical alignment</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Two press-and-hold buttons, <code>jog ◀</code> and <code>jog ▶</code>, that turn the steer motor at a fixed gentle speed regardless of any other setting.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>To physically line up the front wheels straight before pressing <strong>Set zero</strong>. These duplicate the Drive tab's LEFT and RIGHT buttons and exist here only for that alignment job.</p>
+</section>
+<section class="ctrl" data-t="gamepad feel → axes readout not a control. shows the raw numbers coming off each of your controller's sticks, plus the name of the layout the browser thinks it has. useful when a pad numbers its sticks differently from the standard and a binding lands on the wrong one.">
+<h3 id="g-gamepad-feel-axes-readout">Gamepad feel → axes readout</h3>
+<p>Not a control. Shows the raw numbers coming off each of your controller's sticks, plus the name of the layout the browser thinks it has. Useful when a pad numbers its sticks differently from the standard and a binding lands on the wrong one.</p>
+</section>
+<section class="ctrl" data-t="deadzone what it does. how far a stick has to move before the car reacts at all. the slider runs 0 to 50 and is shown as a decimal from 0.00 to 0.50; it starts at 0.15. when you'd use it. raise it if a worn stick makes the car creep when you are not touching it. lower it for finer control near centre.">
+<h3 id="g-deadzone">deadzone</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>How far a stick has to move before the car reacts at all. The slider runs 0 to 50 and is shown as a decimal from 0.00 to 0.50; it starts at 0.15.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Raise it if a worn stick makes the car creep when you are not touching it. Lower it for finer control near centre.</p>
+</section>
+<section class="ctrl" data-t="expo what it does. how gently the stick responds near the centre. the slider runs 10 to 40 and is shown as 1.0 to 4.0; it starts at 2.0. higher numbers mean small stick movements do less and the response builds up towards the ends. when you'd use it. raise it if the car feels twitchy around straight ahead.">
+<h3 id="g-expo">expo</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>How gently the stick responds near the centre. The slider runs 10 to 40 and is shown as 1.0 to 4.0; it starts at 2.0. Higher numbers mean small stick movements do less and the response builds up towards the ends.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Raise it if the car feels twitchy around straight ahead.</p>
+</section>
+<section class="ctrl" data-t="max speed what it does. caps how fast the car can go, as a percentage. slider from 20 to 100, starting at 100. when you'd use it. turn it down to make an indoor run manageable, or when someone new is driving.">
+<h3 id="g-max-speed">max speed</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Caps how fast the car can go, as a percentage. Slider from 20 to 100, starting at 100.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Turn it down to make an indoor run manageable, or when someone new is driving.</p>
+</section>
+<section class="ctrl" data-t="steer gain what it does. caps how much steering the stick can ask for, as a percentage. slider from 20 to 100, starting at 100. when you'd use it. turn it down if full stick is more lock than your model can use.">
+<h3 id="g-steer-gain">steer gain</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Caps how much steering the stick can ask for, as a percentage. Slider from 20 to 100, starting at 100.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Turn it down if full stick is more lock than your model can use.</p>
+</section>
+<section class="ctrl" data-t="accel what it does. chooses how the throttle ramps up when you squeeze a trigger. expo (ease in) — the default. eases in and settles smoothly. linear — climbs at a constant rate. instant — no ramp at all; the motors get what the trigger says immediately. when you'd use it. instant is direct but harsh on the gears. expo is kinder to the drivetrain and to grip.">
+<h3 id="g-accel">accel</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Chooses how the throttle ramps up when you squeeze a trigger.</p>
+<ul>
+<li><strong>expo (ease in)</strong> — the default. Eases in and settles smoothly.</li>
+<li><strong>linear</strong> — climbs at a constant rate.</li>
+<li><strong>instant</strong> — no ramp at all; the motors get what the trigger says immediately.</li>
+</ul>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Instant is direct but harsh on the gears. Expo is kinder to the drivetrain and to grip.</p>
+</section>
+<section class="ctrl" data-t="accel rate what it does. how quick that ramp is. slider from 60 to 600 in steps of 20, starting at 220. higher is punchier, for both the linear and expo settings.">
+<h3 id="g-accel-rate">accel rate</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>How quick that ramp is. Slider from 60 to 600 in steps of 20, starting at 220. Higher is punchier, for both the linear and expo settings.</p>
+</section>
+<section class="ctrl" data-t="button mapping (fold-out) what it does. lists every action the car can be given and which control on your pad currently triggers it. tap a row and it changes to &quot;… press a control&quot;; press the button or move the stick you want, and it is bound. tap the same row again to cancel without changing anything. when you'd use it. when a binding does not suit your pad or your habits. reset to defaults what it does. puts every binding back to the factory layout below. default bindings the names assume an xbox-style pad. other controllers use the same positions under different names. action default control steer left stick, sideways throttle a rt forward, lt backward throttle b (independent mode) right stick, up and down (up is forward) tank turn (tracked mode) left stick, sideways tank throttle (tracked mode) left stick, up and down steer motor, tracked mode right stick, sideways brake a toggle linked/independent drive start toggle raw/steer mode b set steering zero back — hold for one second cycle rgb led y all lights on/off d-pad right lamp 1 d-pad up lamp 2 d-pad down lamp 3 d-pad left lamp 4 x lamp 5 left stick click lamp 6 right stick click trim steer left lb trim steer right rb watch out. in tracked mode the steer motor deliberately sits on the right stick, because the left one is already counter-rotating the tracks. sharing one stick between both used to drive the steer motor into its end stop and stall it there. watch out. set steering zero is the one binding that needs a deliberate one-second hold, because changing calibration mid-drive is destructive. the trim buttons nudge the steering centre by two units per press, and the trim is only applied while you are actually steering — held at rest it would leave a permanent trickle of power on the motor, which makes it buzz instead of turn.">
+<h3 id="g-button-mapping-fold-out">Button mapping (fold-out)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Lists every action the car can be given and which control on your pad currently triggers it. Tap a row and it changes to "… press a control"; press the button or move the stick you want, and it is bound. Tap the same row again to cancel without changing anything.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>When a binding does not suit your pad or your habits.</p>
+<h4 id="g-reset-to-defaults">Reset to defaults</h4>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Puts every binding back to the factory layout below.</p>
+<h4 id="g-default-bindings">Default bindings</h4>
+<p>The names assume an Xbox-style pad. Other controllers use the same positions under different names.</p>
+<div class="scroller"><table><thead><tr><th>Action</th><th>Default control</th></tr></thead><tbody>
+<tr><td>Steer</td><td>Left stick, sideways</td></tr>
+<tr><td>Throttle A</td><td>RT forward, LT backward</td></tr>
+<tr><td>Throttle B (Independent mode)</td><td>Right stick, up and down (up is forward)</td></tr>
+<tr><td>Tank turn (Tracked mode)</td><td>Left stick, sideways</td></tr>
+<tr><td>Tank throttle (Tracked mode)</td><td>Left stick, up and down</td></tr>
+<tr><td>Steer motor, Tracked mode</td><td>Right stick, sideways</td></tr>
+<tr><td>Brake</td><td>A</td></tr>
+<tr><td>Toggle linked/independent drive</td><td>Start</td></tr>
+<tr><td>Toggle raw/steer mode</td><td>B</td></tr>
+<tr><td>Set steering zero</td><td>Back — hold for one second</td></tr>
+<tr><td>Cycle RGB LED</td><td>Y</td></tr>
+<tr><td>All lights on/off</td><td>D-pad Right</td></tr>
+<tr><td>Lamp 1</td><td>D-pad Up</td></tr>
+<tr><td>Lamp 2</td><td>D-pad Down</td></tr>
+<tr><td>Lamp 3</td><td>D-pad Left</td></tr>
+<tr><td>Lamp 4</td><td>X</td></tr>
+<tr><td>Lamp 5</td><td>Left stick click</td></tr>
+<tr><td>Lamp 6</td><td>Right stick click</td></tr>
+<tr><td>Trim steer left</td><td>LB</td></tr>
+<tr><td>Trim steer right</td><td>RB</td></tr>
+</tbody></table></div>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>In Tracked mode the steer motor deliberately sits on the <em>right</em> stick, because the left one is already counter-rotating the tracks. Sharing one stick between both used to drive the steer motor into its end stop and stall it there.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Set steering zero is the one binding that needs a deliberate one-second hold, because changing calibration mid-drive is destructive.</p>
+<p>The trim buttons nudge the steering centre by two units per press, and the trim is only applied while you are actually steering — held at rest it would leave a permanent trickle of power on the motor, which makes it buzz instead of turn.</p>
+</section>
+</section>
+<section class="group"><h2 id="g-lights-tab">Lights tab</h2>
+<p>Nothing here can move the model.</p>
+<section class="ctrl" data-t="lamps 1 to 6 what it does. six buttons, one per lamp on the hub. tap to turn a lamp on or off. lit lamps are filled in. watch out. the numbers are the hub's own lamp numbering, which is not necessarily the order they appear on your model. use chase below to find out which is which.">
+<h3 id="g-lamps-1-to-6">Lamps 1 to 6</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Six buttons, one per lamp on the hub. Tap to turn a lamp on or off. Lit lamps are filled in.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>The numbers are the hub's own lamp numbering, which is not necessarily the order they appear on your model. Use <strong>Chase</strong> below to find out which is which.</p>
+</section>
+<section class="ctrl" data-t="brightness what it does. sets how bright the lit lamps are, from 0 to 100. starts at lamps that are switched off stay off regardless. watch out. at 0 the lit lamps are indistinguishable from off.">
+<h3 id="g-brightness">brightness</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sets how bright the lit lamps are, from 0 to 100. Starts at</p>
+<ol>
+<li>Lamps that are switched off stay off regardless.</li>
+</ol>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>At 0 the lit lamps are indistinguishable from off.</p>
+</section>
+<section class="ctrl" data-t="all on / all off what it does. turns all six lamps on or off in one tap, and updates the six buttons to match.">
+<h3 id="g-all-on-all-off">All on / All off</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Turns all six lamps on or off in one tap, and updates the six buttons to match.</p>
+</section>
+<section class="ctrl" data-t="chase 1→6 (diagnostic) what it does. lights each lamp on its own for about three quarters of a second, in order, then turns everything off. each step is written to the debug log with its number. when you'd use it. to learn which physical lamp on your model corresponds to which number, so you can bind the right one to a gamepad button. watch out. it takes a few seconds and holds the light channel while it runs. let it finish.">
+<h3 id="g-chase-16-diagnostic">Chase 1→6 (diagnostic)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Lights each lamp on its own for about three quarters of a second, in order, then turns everything off. Each step is written to the Debug log with its number.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>To learn which physical lamp on your model corresponds to which number, so you can bind the right one to a gamepad button.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>It takes a few seconds and holds the light channel while it runs. Let it finish.</p>
+</section>
+<section class="ctrl" data-t="status led: red, green, blue, yellow, off what it does. sets the colour of the hub's own small indicator light. purely cosmetic.">
+<h3 id="g-status-led-red-green-blue-yellow-off">Status LED: Red, Green, Blue, Yellow, Off</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sets the colour of the hub's own small indicator light. Purely cosmetic.</p>
+</section>
+</section>
+<section class="group"><h2 id="g-hub-tab">Hub tab</h2>
+<p>Session bookends: what the link is doing, and what the hub is reporting.</p>
+<section class="ctrl" data-t="connection status not a control. the full status text for the link, in plain words. this is where the status chip in the top bar takes you.">
+<h3 id="g-connection-status">Connection status</h3>
+<p>Not a control. The full status text for the link, in plain words. This is where the status chip in the top bar takes you.</p>
+</section>
+<section class="ctrl" data-t="discovered ports (fold-out) what it does. lists the motors, lamps and sensors the hub reported when it connected. the page does not assume a fixed layout; it asks the hub and works with what comes back. when you'd use it. when trying an unfamiliar set, to see what the page found. each entry reads like steer=0x34 — a name and the number the hub uses for it internally. you never need those numbers, but they are what the debug tab's probe expects if you ever go there.">
+<h3 id="g-discovered-ports-fold-out">Discovered ports (fold-out)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Lists the motors, lamps and sensors the hub reported when it connected. The page does not assume a fixed layout; it asks the hub and works with what comes back.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>When trying an unfamiliar set, to see what the page found.</p>
+<p>Each entry reads like <code>steer=0x34</code> — a name and the number the hub uses for it internally. You never need those numbers, but they are what the Debug tab's probe expects if you ever go there.</p>
+</section>
+<section class="ctrl" data-t="refresh battery what it does. asks the hub for its charge level right now, rather than waiting for it to report on its own.">
+<h3 id="g-refresh-battery">refresh battery</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Asks the hub for its charge level right now, rather than waiting for it to report on its own.</p>
+</section>
+<section class="ctrl" data-t="telemetry: off / on what it does. turns on the stream of motion readings — tilt, acceleration — and the live speed figures for the two drive motors. off by default. when you'd use it. when you want the tilt readout below to show real numbers, or the speed figures on the drive tab to move. watch out. this is the single heaviest load on the bluetooth link. the motion sensor alone produces around 250 messages a second, and with the motor speed streams on top the hub has been seen to stop responding within a second of connecting. leave it off unless you want the numbers. watch out. the steer motor's speed is not included, because that motor is already streaming its position for the steering to work, and a port can only report one thing at a time.">
+<h3 id="g-telemetry-off-on">telemetry: OFF / ON</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Turns on the stream of motion readings — tilt, acceleration — and the live speed figures for the two drive motors. <strong>Off by default.</strong></p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>When you want the tilt readout below to show real numbers, or the speed figures on the Drive tab to move.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>This is the single heaviest load on the Bluetooth link. The motion sensor alone produces around 250 messages a second, and with the motor speed streams on top the hub has been seen to stop responding within a second of connecting. Leave it off unless you want the numbers.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>The steer motor's speed is not included, because that motor is already streaming its position for the steering to work, and a port can only report one thing at a time.</p>
+</section>
+<section class="ctrl" data-t="crash guard: off / on what it does. watches the hub's accelerometer and cuts the motors on a sharp impact. off by default. when you'd use it. driving somewhere with things to hit. watch out. it costs an extra sensor subscription, and the hub is sensitive to how many of those are running. see the telemetry warning above.">
+<h3 id="g-crash-guard-off-on">crash guard: OFF / ON</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Watches the hub's accelerometer and cuts the motors on a sharp impact. <strong>Off by default.</strong></p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Driving somewhere with things to hit.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>It costs an extra sensor subscription, and the hub is sensitive to how many of those are running. See the telemetry warning above.</p>
+</section>
+<section class="ctrl" data-t="tilt readout not a control. reads tilt: — (turn telemetry on) until telemetry is switched on, then shows three numbers for the hub's orientation.">
+<h3 id="g-tilt-readout">tilt readout</h3>
+<p>Not a control. Reads <code>tilt: — (turn telemetry on)</code> until telemetry is switched on, then shows three numbers for the hub's orientation.</p>
+</section>
+</section>
+<section class="group"><h2 id="g-motion-tab">Motion tab</h2>
+<p>What the hub thinks its own attitude is, drawn rather than tabulated. Nothing here commands a motor.</p>
+<section class="ctrl" data-t="attitude what it does. not a control. a 3d view of the hub's orientation with the same three angles — roll, pitch and yaw — written underneath it. watch out. opening this tab subscribes to the orientation sensor and to the steer motor's position, and drops both again when you leave. that is real load on the bluetooth link; see the telemetry warning in the hub tab. watch out. the 3d drawing is loaded separately and from the internet. if it cannot load, the note reads 3d unavailable — numbers only and the readouts carry on regardless. the tab is designed to be useful without it.">
+<h3 id="g-attitude">Attitude</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Not a control. A 3D view of the hub's orientation with the same three angles — roll, pitch and yaw — written underneath it.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Opening this tab subscribes to the orientation sensor and to the steer motor's position, and drops both again when you leave. That is real load on the Bluetooth link; see the <strong>telemetry</strong> warning in the Hub tab.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>The 3D drawing is loaded separately and from the internet. If it cannot load, the note reads <code>3D unavailable — numbers only</code> and the readouts carry on regardless. The tab is designed to be useful without it.</p>
+</section>
+<section class="ctrl" data-t="centre here what it does. takes the hub's current orientation as level and facing away from you, and reports every later reading relative to that. the choice is remembered between sessions. when you'd use it. once per model, after the hub is built into it. the hub does not know which way round it was mounted; this is how you tell it. watch out. it needs a reading to capture. pressed before any orientation data has arrived it says no orientation data yet and does nothing. watch out. yaw is relative and drifts. it is a gyroscope reading with no compass behind it, so it wanders over minutes even while the model stands still. roll and pitch are held honest by gravity and do not.">
+<h3 id="g-centre-here">Centre here</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Takes the hub's current orientation as level and facing away from you, and reports every later reading relative to that. The choice is remembered between sessions.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Once per model, after the hub is built into it. The hub does not know which way round it was mounted; this is how you tell it.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>It needs a reading to capture. Pressed before any orientation data has arrived it says <code>no orientation data yet</code> and does nothing.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Yaw is relative and drifts. It is a gyroscope reading with no compass behind it, so it wanders over minutes even while the model stands still. Roll and pitch are held honest by gravity and do not.</p>
+</section>
+<section class="ctrl" data-t="steering not a control. a dial and a number showing where the steer motor is standing. it is the motor's shaft angle, not the angle of the road wheels — the gearing between them is whatever your model builds.">
+<h3 id="g-steering">Steering</h3>
+<p><strong>Not a control.</strong> A dial and a number showing where the steer motor is standing. It is the motor's shaft angle, not the angle of the road wheels — the gearing between them is whatever your model builds.</p>
+</section>
+</section>
+<section class="group"><h2 id="g-macros-tab">Macros tab</h2>
+<p>A macro is a short piece of JavaScript you write yourself and the page runs for you, so a sequence — drive forward, wait, turn, read a sensor, react — can happen on its own instead of one action at a time under your thumb.</p>
+<section class="ctrl" data-t="macro slot what it does. the dropdown lists your saved macros; new adds an empty one and delete removes the one currently selected. watch out. delete has no confirmation and no undo. export first (see below) if you might want it back.">
+<h3 id="g-macro-slot">Macro slot</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>The dropdown lists your saved macros; <strong>New</strong> adds an empty one and <strong>Delete</strong> removes the one currently selected.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Delete has no confirmation and no undo. Export first (see below) if you might want it back.</p>
+</section>
+<section class="ctrl" data-t="source what it does. the text box where you write the macro. what you type is saved automatically a moment after you stop typing. the code you write is the body of a function — you do not write function or async yourself, and you write plain calls like await drive(50, 0), not hub.drive(...). every name described below is already available to call. await every call. not only sensor reads and waits — every single one, including drive, stopdrive and lights. each call is a request to the page that owns the radio, and the page can refuse it: a duration over the ceiling, an unsafe. method with the checkbox off, a call from the wrong drive family. a call you did not await is a refusal with nobody listening, and the macro carries on as if it had worked. watch out. a failure — a thrown error, or a call this page refuses — stops the macro and shows error at line n: ... in the status line underneath. that line number is the line inside this box, not some internal offset.">
+<h3 id="g-source">Source</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>The text box where you write the macro. What you type is saved automatically a moment after you stop typing.</p>
+<p>The code you write is the <em>body</em> of a function — you do not write <code>function</code> or <code>async</code> yourself, and you write plain calls like <code>await drive(50, 0)</code>, not <code>hub.drive(...)</code>. Every name described below is already available to call.</p>
+<p><strong><code>await</code> every call.</strong> Not only sensor reads and waits — every single one, including <code>drive</code>, <code>stopDrive</code> and <code>lights</code>. Each call is a request to the page that owns the radio, and the page can refuse it: a duration over the ceiling, an <code>unsafe.*</code> method with the checkbox off, a call from the wrong drive family. A call you did not <code>await</code> is a refusal with nobody listening, and the macro carries on as if it had worked.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>A failure — a thrown error, or a call this page refuses — stops the macro and shows <code>error at line N: ...</code> in the status line underneath. That line number is the line inside this box, not some internal offset.</p>
+</section>
+<section class="ctrl" data-t="unsafe what it does. a checkbox. off by default, and off again every time a macro is imported from a file regardless of what the file says. with it off, any call to one of the unsafe. methods described below is refused before it reaches the hub. with it on, they are allowed. watch out. every unsafe. method is here because a hardware session with this exact hub found it dangerous. turning this on for a macro you did not write yourself, or did not read carefully, is how those lessons get relearned the hard way.">
+<h3 id="g-unsafe">unsafe</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>A checkbox. Off by default, and off again every time a macro is imported from a file regardless of what the file says. With it off, any call to one of the <code>unsafe.*</code> methods described below is refused before it reaches the hub. With it on, they are allowed.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Every <code>unsafe.*</code> method is here because a hardware session with this exact hub found it dangerous. Turning this on for a macro you did not write yourself, or did not read carefully, is how those lessons get relearned the hard way.</p>
+</section>
+<section class="ctrl" data-t="run / stop what it does. run starts the macro; stop ends it early. both are disabled when there is nothing to do — run while one is already going, stop while none is. watch out. starting a macro switches your gamepad to a watching mode: it keeps listening so that touching any stick or button ends the macro immediately and hands control back to you, but it commands nothing on its own while the macro is in charge. anything else that would normally cut the motors — a disconnect, a collision (see collision(mode) below), a low-signal warning from the hub — ends the macro too.">
+<h3 id="g-run-stop">Run / Stop</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span><strong>Run</strong> starts the macro; <strong>Stop</strong> ends it early. Both are disabled when there is nothing to do — Run while one is already going, Stop while none is.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Starting a macro switches your gamepad to a watching mode: it keeps listening so that touching any stick or button ends the macro immediately and hands control back to you, but it commands nothing on its own while the macro is in charge. Anything else that would normally cut the motors — a disconnect, a collision (see <strong>collision(mode)</strong> below), a low-signal warning from the hub — ends the macro too.</p>
+</section>
+<section class="ctrl" data-t="elapsed / status not controls. elapsed counts up in tenths of a second while a macro runs. the line underneath shows starting…, running, stopping…, the macro's own print() output, or the last result once it stops. that result is idle on a clean finish, error at line n: ... on a failure, and otherwise stopped: ... naming what ended the run — stopped: collision, stopped: low signal, stopped: disconnected, stopped: gamepad, stopped: by the stop button. a car that stopped itself tells you which of those it was, rather than reading the same as a clean finish. a macro that changed the drive mode with mode() also says which mode it left behind — idle — drive mode left as playvm, or stopped: low signal — drive mode left as raw — on any run that ends without a script error. a run that ends on an error shows error at line n: ... instead, and that line has no room for the mode, so after a failed run check the drive mode in setup rather than the status line. the mode is not put back when the run ends, because returning to the combined frame would sweep the steering rack again, and a car that moves after a stop is worse than one left in the wrong mode. the line is there so the next thing you do knows which mode it is starting from. while a macro is arming that mode, the same line reads arming combined frame — the steering rack will sweep…, so a few seconds of apparent stillness at the start of a run is accounted for.">
+<h3 id="g-elapsed-status">elapsed / status</h3>
+<p>Not controls. <strong>elapsed</strong> counts up in tenths of a second while a macro runs. The line underneath shows <code>starting…</code>, <code>running</code>, <code>stopping…</code>, the macro's own <code>print()</code> output, or the last result once it stops. That result is <code>idle</code> on a clean finish, <code>error at line N: ...</code> on a failure, and otherwise <code>stopped: ...</code> naming what ended the run — <code>stopped: collision</code>, <code>stopped: low signal</code>, <code>stopped: disconnected</code>, <code>stopped: gamepad</code>, <code>stopped: by the Stop button</code>. A car that stopped itself tells you which of those it was, rather than reading the same as a clean finish.</p>
+<p>A macro that changed the drive mode with <code>mode()</code> also says which mode it left behind — <code>idle — drive mode left as playvm</code>, or <code>stopped: low signal — drive mode left as raw</code> — on any run that ends without a script error. A run that ends on an error shows <code>error at line N: ...</code> instead, and that line has no room for the mode, so after a failed run check the drive mode in Setup rather than the status line. The mode is not put back when the run ends, because returning to the combined frame would sweep the steering rack again, and a car that moves after a stop is worse than one left in the wrong mode. The line is there so the next thing you do knows which mode it is starting from.</p>
+<p>While a macro is arming that mode, the same line reads <code>arming combined frame — the steering rack will sweep…</code>, so a few seconds of apparent stillness at the start of a run is accounted for.</p>
+</section>
+<section class="ctrl" data-t="methods what it does. the panel under the editor lists every method a macro can call, each with its signature and a one-line description; the ones tied to a single drive family, or to unsafe, also carry a badge saying which. typing in the search box narrows the list, matching both the name and the description — so &quot;brake&quot; finds brake(port), and &quot;battery&quot; finds it whether you remember the name or only what it does. clicking a row inserts a complete, runnable call at the cursor in the source box, ready-awaited and with plausible numbers already filled in, so a macro can be assembled without typing a name from memory. whatever you had selected is replaced, and the change is saved like anything else you type. watch out. the eight unsafe. methods are listed only while the unsafe checkbox is ticked. with it off, a line under the list tells you how many are hidden rather than pretending the list is everything there is; while you are searching it counts only the hidden ones your search matches, so ticking the box always adds what the line said it would. the inserted call is a starting point, not advice — the numbers in it are examples, and a method still has to suit the family your macro is already using.">
+<h3 id="g-methods">Methods</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>The panel under the editor lists every method a macro can call, each with its signature and a one-line description; the ones tied to a single drive family, or to <strong>unsafe</strong>, also carry a badge saying which. Typing in the search box narrows the list, matching both the name and the description — so "brake" finds <code>brake(port)</code>, and "battery" finds it whether you remember the name or only what it does.</p>
+<p>Clicking a row inserts a complete, runnable call at the cursor in the Source box, ready-awaited and with plausible numbers already filled in, so a macro can be assembled without typing a name from memory. Whatever you had selected is replaced, and the change is saved like anything else you type.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>The eight <code>unsafe.*</code> methods are listed only while the <strong>unsafe</strong> checkbox is ticked. With it off, a line under the list tells you how many are hidden rather than pretending the list is everything there is; while you are searching it counts only the hidden ones your search matches, so ticking the box always adds what the line said it would. The inserted call is a starting point, not advice — the numbers in it are examples, and a method still has to suit the family your macro is already using.</p>
+</section>
+<section class="ctrl" data-t="donut / bumper / sweep what it does. three worked examples, above the search box. clicking one saves it as a new macro slot and switches to it. when you'd use it. as a first macro, or to see the shape of something before writing your own — donut is the combined frame, bumper picks its own drive mode with mode('raw') and then shows collision('stop') with waitfor, backing off with tankfor to spin on the spot, and sweep is the raw path with a sensor read. watch out. each example arrives with unsafe off, like any new macro. bumper opens with mode('raw'), so it runs from a cold start whatever the hub happened to be doing. sweep does not: it drives raw motors without asking for the mode first, so either give it the same opening line or leave the hub out of its combined-frame drive mode before you run it. donut is the other way round and needs that mode — the one the app enters on its own when you connect, but not one donut arms for itself if you have since left it.">
+<h3 id="g-donut-bumper-sweep">donut / bumper / sweep</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Three worked examples, above the search box. Clicking one saves it as a <strong>new</strong> macro slot and switches to it.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>As a first macro, or to see the shape of something before writing your own — <code>donut</code> is the combined frame, <code>bumper</code> picks its own drive mode with <code>mode('raw')</code> and then shows <code>collision('stop')</code> with <code>waitFor</code>, backing off with <code>tankFor</code> to spin on the spot, and <code>sweep</code> is the raw path with a sensor read.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Each example arrives with <strong>unsafe</strong> off, like any new macro. <code>bumper</code> opens with <code>mode('raw')</code>, so it runs from a cold start whatever the hub happened to be doing. <code>sweep</code> does not: it drives raw motors without asking for the mode first, so either give it the same opening line or leave the hub out of its combined-frame drive mode before you run it. <code>donut</code> is the other way round and needs that mode — the one the app enters on its own when you connect, but not one <code>donut</code> arms for itself if you have since left it.</p>
+</section>
+<section class="ctrl" data-t="export / import what it does. export downloads every saved macro as one json file. import reads a file of that shape back in, adding to what you already have — a macro sharing an id with one you already have replaces it, and everything else is left alone. watch out. every macro coming in from import lands with unsafe off, no matter what the file says it should be. if it needs unsafe calls, you turn that on yourself, deliberately, after looking at what you are importing.">
+<h3 id="g-export-import">Export / Import</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span><strong>Export</strong> downloads every saved macro as one JSON file. <strong>Import</strong> reads a file of that shape back in, adding to what you already have — a macro sharing an id with one you already have replaces it, and everything else is left alone.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Every macro coming in from Import lands with <strong>unsafe</strong> off, no matter what the file says it should be. If it needs unsafe calls, you turn that on yourself, deliberately, after looking at what you are importing.</p>
+</section>
+<section class="ctrl" data-t="the macro language two drive families exist, the same two the drive tab's drive-behaviour dropdown chooses between, and a macro uses one of them at a time: the combined frame — the hub's own drive mode (playvm below): drive, drivefor, stopdrive, lights. these work while the hub is actually in that drive mode, which the macro can enter for itself with mode('playvm') instead of your setting it on the drive tab first. raw motors — direct per-motor control: motorfor, throttlefor, tankfor, brake, brakeall, coast, steer, steerzero. these work while the hub is not in combined-frame mode, which the macro can arrange for itself with mode('raw'). whichever family your macro's first motion call belongs to, every later call is held to it until either the run ends or mode() changes the drive mode: a successful mode() closes that stretch of the run and opens a new one, free to use the other family. mixing the two inside one stretch — calling a raw-path method while the combined frame is armed, or the other way around — is still refused. everything else — sensors, lights, waits, collision settings, print — works under either family and does not choose one for you. the two directions are not equally available, and it is the one thing worth remembering about mode(). going to 'raw' is allowed at any point in a run. going to 'playvm' is allowed only before the run's first motion call, because arming the combined frame sweeps the steering rack and that sweep is itself movement — a car already driving under the macro must not start calibrating its own steering halfway through. a mode('raw') in between does not buy the chance back: the run has moved, and that is what closed it. because arming is what sweeps the rack, a raw macro and a combined-frame macro run one after the other sweep it once each. every entry into the hub's own drive mode calibrates the steering again, whether a macro asked for it or you chose it from the drive tab, so alternating the two is a few seconds of rack movement each time round. that is the hub doing what it always does on arming, not something going wrong. every motion call that takes a duration is capped at ten seconds; asking for longer is refused before anything moves. sensor reads (tilt, accel, battery, motorspeed, motorpos) and waitfor('collision') all take a timeout in milliseconds, three seconds by default. the underlying stream only reports when its value actually changes, so a sensor sitting at a steady reading produces nothing to read — measured on hardware at 18 seconds of silence with not one byte back. so the first read of a sensor in a run has to wait for a sample to arrive, and rather than hang forever, or hand back a made-up zero, a first read that outlasts its timeout fails with a message saying so. once a sensor has produced its first sample, the page keeps listening to it for the rest of the run and every later read of that sensor answers immediately with the newest value the hub has sent. that is what makes await waituntil(async () =&gt; await motorpos(port) &gt; 90) work: each pass of the loop sees a fresh reading, not the one the first read happened to catch.">
+<h3 id="g-the-macro-language">The macro language</h3>
+<p>Two drive families exist, the same two the Drive tab's drive-behaviour dropdown chooses between, and a macro uses one of them at a time:</p>
+<ul>
+<li>The <strong>combined frame</strong> — the hub's own drive mode (<code>playvm</code> below): <code>drive</code>, <code>driveFor</code>, <code>stopDrive</code>, <code>lights</code>. These work while the hub is actually in that drive mode, which the macro can enter for itself with <code>mode('playvm')</code> instead of your setting it on the Drive tab first.</li>
+<li><strong>Raw motors</strong> — direct per-motor control: <code>motorFor</code>, <code>throttleFor</code>, <code>tankFor</code>, <code>brake</code>, <code>brakeAll</code>, <code>coast</code>, <code>steer</code>, <code>steerZero</code>. These work while the hub is <em>not</em> in combined-frame mode, which the macro can arrange for itself with <code>mode('raw')</code>.</li>
+</ul>
+<p>Whichever family your macro's first motion call belongs to, every later call is held to it until either the run ends or <code>mode()</code> changes the drive mode: a successful <code>mode()</code> closes that stretch of the run and opens a new one, free to use the other family. Mixing the two inside one stretch — calling a raw-path method while the combined frame is armed, or the other way around — is still refused. Everything else — sensors, lights, waits, collision settings, <code>print</code> — works under either family and does not choose one for you.</p>
+<p>The two directions are not equally available, and it is the one thing worth remembering about <code>mode()</code>. Going to <code>'raw'</code> is allowed at any point in a run. Going to <code>'playvm'</code> is allowed only before the run's first motion call, because arming the combined frame sweeps the steering rack and that sweep is itself movement — a car already driving under the macro must not start calibrating its own steering halfway through. A <code>mode('raw')</code> in between does not buy the chance back: the run has moved, and that is what closed it.</p>
+<p>Because arming is what sweeps the rack, a raw macro and a combined-frame macro run one after the other sweep it once each. Every entry into the hub's own drive mode calibrates the steering again, whether a macro asked for it or you chose it from the Drive tab, so alternating the two is a few seconds of rack movement each time round. That is the hub doing what it always does on arming, not something going wrong.</p>
+<p>Every motion call that takes a duration is capped at ten seconds; asking for longer is refused before anything moves.</p>
+<p>Sensor reads (<code>tilt</code>, <code>accel</code>, <code>battery</code>, <code>motorSpeed</code>, <code>motorPos</code>) and <code>waitFor('collision')</code> all take a timeout in milliseconds, three seconds by default. The underlying stream only reports when its value actually changes, so a sensor sitting at a steady reading produces nothing to read — measured on hardware at 18 seconds of silence with not one byte back. So the <em>first</em> read of a sensor in a run has to wait for a sample to arrive, and rather than hang forever, or hand back a made-up zero, a first read that outlasts its timeout fails with a message saying so.</p>
+<p>Once a sensor has produced its first sample, the page keeps listening to it for the rest of the run and every later read of that sensor answers immediately with the newest value the hub has sent. That is what makes <code>await waitUntil(async () =&gt; await motorPos(port) &gt; 90)</code> work: each pass of the loop sees a fresh reading, not the one the first read happened to catch.</p>
+</section>
+<section class="ctrl" data-t="drive(speed, steer) what it does. commands the hub's combined frame: speed and steering as one instruction, exactly like the drive tab's default drive mode. the command keeps being refreshed on its own — you do not have to repeat it — for as long as ten seconds, after which it releases itself even if you never call stopdrive(). path / unsafe. combined frame (playvm) · not unsafe.">
+<h3 id="g-drivespeed-steer">drive(speed, steer)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Commands the hub's combined frame: speed and steering as one instruction, exactly like the Drive tab's default drive mode. The command keeps being refreshed on its own — you do not have to repeat it — for as long as ten seconds, after which it releases itself even if you never call <code>stopDrive()</code>.</p>
+<p><strong>Path / unsafe.</strong> Combined frame (<code>playvm</code>) · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="drivefor(speed, steer, ms) what it does. same as drive, but releases on its own after ms milliseconds (ten seconds at most) instead of waiting for stopdrive(). path / unsafe. combined frame (playvm) · not unsafe.">
+<h3 id="g-driveforspeed-steer-ms">driveFor(speed, steer, ms)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Same as <code>drive</code>, but releases on its own after <code>ms</code> milliseconds (ten seconds at most) instead of waiting for <code>stopDrive()</code>.</p>
+<p><strong>Path / unsafe.</strong> Combined frame (<code>playvm</code>) · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="stopdrive() what it does. releases a drive/drivefor command early. path / unsafe. combined frame (playvm) · not unsafe.">
+<h3 id="g-stopdrive">stopDrive()</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Releases a <code>drive</code>/<code>driveFor</code> command early.</p>
+<p><strong>Path / unsafe.</strong> Combined frame (<code>playvm</code>) · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="lights(mode) what it does. sets the combined frame's lights field. mode is one of 'both', 'off', 'brake' or 'front-off-brake'; anything else is refused. path / unsafe. combined frame (playvm) · not unsafe.">
+<h3 id="g-lightsmode">lights(mode)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sets the combined frame's lights field. <code>mode</code> is one of <code>'both'</code>, <code>'off'</code>, <code>'brake'</code> or <code>'front-off-brake'</code>; anything else is refused.</p>
+<p><strong>Path / unsafe.</strong> Combined frame (<code>playvm</code>) · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="motorfor(port, speed, ms) what it does. drives one motor at speed for ms milliseconds (ten seconds at most), then floats it. port is one of the numbers shown in the hub tab's discovered ports list. path / unsafe. raw motors · not unsafe.">
+<h3 id="g-motorforport-speed-ms">motorFor(port, speed, ms)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Drives one motor at <code>speed</code> for <code>ms</code> milliseconds (ten seconds at most), then floats it. <code>port</code> is one of the numbers shown in the Hub tab's Discovered ports list.</p>
+<p><strong>Path / unsafe.</strong> Raw motors · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="throttlefor(speed, ms) what it does. drives both drive motors together at the same speed for ms milliseconds, then floats them. path / unsafe. raw motors · not unsafe.">
+<h3 id="g-throttleforspeed-ms">throttleFor(speed, ms)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Drives both drive motors together at the same <code>speed</code> for <code>ms</code> milliseconds, then floats them.</p>
+<p><strong>Path / unsafe.</strong> Raw motors · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="tankfor(left, right, ms) what it does. drives the two drive motors at independent left and right speeds for ms milliseconds, then floats both — opposite signs turn the model on the spot, the way a tracked vehicle steers. path / unsafe. raw motors · not unsafe.">
+<h3 id="g-tankforleft-right-ms">tankFor(left, right, ms)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Drives the two drive motors at independent <code>left</code> and <code>right</code> speeds for <code>ms</code> milliseconds, then floats both — opposite signs turn the model on the spot, the way a tracked vehicle steers.</p>
+<p><strong>Path / unsafe.</strong> Raw motors · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="brake(port) what it does. brakes one motor — the staged coast-then-brake behaviour behind the drive tab's &quot;on release&quot; setting, not an instant stop from speed. path / unsafe. raw motors · not unsafe.">
+<h3 id="g-brakeport">brake(port)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Brakes one motor — the staged coast-then-brake behaviour behind the Drive tab's "on release" setting, not an instant stop from speed.</p>
+<p><strong>Path / unsafe.</strong> Raw motors · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="brakeall() what it does. brakes both drive motors together. path / unsafe. raw motors · not unsafe.">
+<h3 id="g-brakeall">brakeAll()</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Brakes both drive motors together.</p>
+<p><strong>Path / unsafe.</strong> Raw motors · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="coast(port) what it does. floats one motor immediately — no braking, the motor just stops resisting. path / unsafe. raw motors · not unsafe.">
+<h3 id="g-coastport">coast(port)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Floats one motor immediately — no braking, the motor just stops resisting.</p>
+<p><strong>Path / unsafe.</strong> Raw motors · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="steer(input) what it does. sets a steering target, -100 to 100 across the configured max angle. refused unless the steering is in its own steer mode, chosen from the mode dropdown at the top of the drive tab — a macro cannot switch that one itself, so set it there first. mode() covers the drive families, not the steering, and this call says so rather than quietly commanding nothing. there is no duration on this call: a closed loop is already holding the angle against feedback, not spinning a motor freely, so there is nothing here for a deadline to bound. ending the run still floats the steer port. path / unsafe. raw motors · not unsafe.">
+<h3 id="g-steerinput">steer(input)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sets a steering target, <code>-100</code> to <code>100</code> across the configured <strong>max angle</strong>. Refused unless the steering is in its own <strong>Steer</strong> mode, chosen from the <strong>mode</strong> dropdown at the top of the Drive tab — a macro cannot switch that one itself, so set it there first. <code>mode()</code> covers the drive families, not the steering, and this call says so rather than quietly commanding nothing. There is no duration on this call: a closed loop is already holding the angle against feedback, not spinning a motor freely, so there is nothing here for a deadline to bound. Ending the run still floats the steer port.</p>
+<p><strong>Path / unsafe.</strong> Raw motors · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="steerzero() what it does. records the steering motor's current position as straight ahead — the same thing set zero does in the setup tab. path / unsafe. raw motors · not unsafe.">
+<h3 id="g-steerzero">steerZero()</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Records the steering motor's current position as straight ahead — the same thing <strong>Set zero</strong> does in the Setup tab.</p>
+<p><strong>Path / unsafe.</strong> Raw motors · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="steerpos() what it does. reads the steer motor's current position in degrees, right now — not a subscription, so it has no timeout. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-steerpos">steerPos()</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Reads the steer motor's current position in degrees, right now — not a subscription, so it has no timeout.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="lamps(mask, brightness) what it does. sets the six lamps directly. mask is a bit per lamp — bit 0 is lamp 1 through bit 5 for lamp 6, so 0x3f is all six — and brightness is 0 to 100. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-lampsmask-brightness">lamps(mask, brightness)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sets the six lamps directly. <code>mask</code> is a bit per lamp — bit 0 is Lamp 1 through bit 5 for Lamp 6, so <code>0x3f</code> is all six — and <code>brightness</code> is 0 to 100.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="led(colour) what it does. sets the status led. colour is the same numeric code the lights tab's buttons use: 9 red, 6 green, 3 blue, 7 yellow, 0 off. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-ledcolour">led(colour)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sets the status LED. <code>colour</code> is the same numeric code the Lights tab's buttons use: <code>9</code> red, <code>6</code> green, <code>3</code> blue, <code>7</code> yellow, <code>0</code> off.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="tilt(timeoutms) what it does. returns the latest tilt reading as {x, y, z}. see &quot;the macro language&quot; above for what the first read of a steady, unchanging sensor does to this call. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-tilttimeoutms">tilt(timeoutMs)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Returns the latest tilt reading as <code>{x, y, z}</code>. See "The macro language" above for what the first read of a steady, unchanging sensor does to this call.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="accel(timeoutms) what it does. returns the latest accelerometer reading, in mg, as {x, y, z}. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-acceltimeoutms">accel(timeoutMs)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Returns the latest accelerometer reading, in mG, as <code>{x, y, z}</code>.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="battery(timeoutms) what it does. returns the latest battery reading as a percentage. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-batterytimeoutms">battery(timeoutMs)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Returns the latest battery reading as a percentage.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="motorspeed(port, timeoutms) what it does. returns the latest speed reading from one motor's port. a steady speed, including a steady zero, is a value that never changes — see &quot;the macro language&quot; above for why the first read of one can time out. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-motorspeedport-timeoutms">motorSpeed(port, timeoutMs)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Returns the latest speed reading from one motor's port. A steady speed, including a steady zero, is a value that never changes — see "The macro language" above for why the first read of one can time out.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="motorpos(port, timeoutms) what it does. returns the latest position reading from one motor's port, in degrees. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-motorposport-timeoutms">motorPos(port, timeoutMs)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Returns the latest position reading from one motor's port, in degrees.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="ports() what it does. returns the same port map the hub tab's discovered ports list shows — which numeric port is which motor, lamp or sensor role. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-ports">ports()</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Returns the same port map the Hub tab's Discovered ports list shows — which numeric port is which motor, lamp or sensor role.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="wait(ms) what it does. pauses the macro for ms milliseconds and does nothing else. this is how a macro paces itself between steps. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-waitms">wait(ms)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Pauses the macro for <code>ms</code> milliseconds and does nothing else. This is how a macro paces itself between steps.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="waituntil(predicate, timeoutms, pollms) what it does. calls your predicate function repeatedly — every pollms milliseconds, 50ms by default — until it returns something truthy, then returns true. timeoutms (three seconds by default) bounds the whole wait; running out of time is a failure, not a false result. your predicate can call any of the other functions here, including sensor reads. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-waituntilpredicate-timeoutms-pollms">waitUntil(predicate, timeoutMs, pollMs)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Calls your <code>predicate</code> function repeatedly — every <code>pollMs</code> milliseconds, 50ms by default — until it returns something truthy, then returns <code>true</code>. <code>timeoutMs</code> (three seconds by default) bounds the whole wait; running out of time is a failure, not a <code>false</code> result. Your predicate can call any of the other functions here, including sensor reads.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="waitfor(name, timeoutms) what it does. waits for an event. the only name supported is 'collision', which resolves the moment a hit is detected. anything else is refused immediately rather than left to wait for an event that will never come. watch out. refused outright while collision(mode) (below) is still 'abort', because under that mode the hit this call is waiting for is also the hit that ends the run — the call could never return. call collision('stop') or collision('notify') first if you want to react to a bump instead of having it end the macro. it also only ever sees a hit the crash guard actually detected, so the hub tab's guard has to be armed and the knock has to clear collisionthreshold(mg). path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-waitforname-timeoutms">waitFor(name, timeoutMs)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Waits for an event. The only name supported is <code>'collision'</code>, which resolves the moment a hit is detected. Anything else is refused immediately rather than left to wait for an event that will never come.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Refused outright while <strong>collision(mode)</strong> (below) is still <code>'abort'</code>, because under that mode the hit this call is waiting for is also the hit that ends the run — the call could never return. Call <code>collision('stop')</code> or <code>collision('notify')</code> first if you want to react to a bump instead of having it end the macro. It also only ever sees a hit the crash guard actually detected, so the Hub tab's guard has to be armed and the knock has to clear <strong>collisionThreshold(mg)</strong>.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="mode(name) what it does. changes the hub's drive behaviour from inside the macro, so a run can put the car into the family it needs rather than depending on what the drive tab was left showing. name is one of two: 'playvm' arms the hub's own combined frame — the same thing choosing typical module behaviour in the drive tab does, and it sweeps the steering rack in the same way, taking a few seconds. the status line says arming combined frame — the steering rack will sweep… before it starts, in the same words the drive tab uses. 'raw' hands the motors back to this page, which is what the raw-motor methods need. asking for the mode the hub is already in does nothing at all, so await mode('raw'); at the top of a raw macro costs nothing on a car that was already out of the combined frame — and, in particular, does not disturb an independent or tracked setup you chose yourself. watch out. 'playvm' has to come before the macro moves anything. once any motion call has run, arming is refused for the rest of that run, and a mode('raw') in between does not give the chance back — see &quot;the macro language&quot; above for why. 'raw' has no such restriction. watch out. await it, like everything else. the switch takes seconds, and any other call made while it is still going is refused saying so. if the hub will not arm, the page falls back to a mode that drives the motors directly and the call fails, rather than leaving the macro to drive a frame that was never armed. arming also drops the steering out of steer back to raw, exactly as choosing the mode by hand does, so steer() is unavailable afterwards until that dropdown is set again — mode() chooses between the drive families, and steering's own mode is not one of them. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-modename">mode(name)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Changes the hub's drive behaviour from inside the macro, so a run can put the car into the family it needs rather than depending on what the Drive tab was left showing. <code>name</code> is one of two:</p>
+<ul>
+<li><code>'playvm'</code> arms the hub's own combined frame — the same thing choosing <strong>Typical module behaviour</strong> in the Drive tab does, and it sweeps the steering rack in the same way, taking a few seconds. The status line says <code>arming combined frame — the steering rack will sweep…</code> before it starts, in the same words the Drive tab uses.</li>
+<li><code>'raw'</code> hands the motors back to this page, which is what the raw-motor methods need.</li>
+</ul>
+<p>Asking for the mode the hub is already in does nothing at all, so <code>await mode('raw');</code> at the top of a raw macro costs nothing on a car that was already out of the combined frame — and, in particular, does not disturb an <strong>Independent</strong> or <strong>Tracked</strong> setup you chose yourself.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span><code>'playvm'</code> has to come before the macro moves anything. Once any motion call has run, arming is refused for the rest of that run, and a <code>mode('raw')</code> in between does not give the chance back — see "The macro language" above for why. <code>'raw'</code> has no such restriction.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Await it, like everything else. The switch takes seconds, and any other call made while it is still going is refused saying so. If the hub will not arm, the page falls back to a mode that drives the motors directly and the call fails, rather than leaving the macro to drive a frame that was never armed. Arming also drops the steering out of <strong>Steer</strong> back to <strong>Raw</strong>, exactly as choosing the mode by hand does, so <code>steer()</code> is unavailable afterwards until that dropdown is set again — <code>mode()</code> chooses between the drive families, and steering's own mode is not one of them.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="collision(mode) what it does. changes what a detected impact does to this run. this only matters while the hub tab's crash guard is armed — that toggle is what actually watches the accelerometer; this call only changes what happens once it reports a hit. restored to whatever it was before your macro touched it once the run ends. mode is one of four: 'abort' — the default. the motors are cut and the run ends. 'stop' — the motors are cut and the run keeps going, so a waitfor('collision') in your macro is what hears about the bump. this is the mode for a bumper-bot: drive, wait for the knock, back off, carry on. 'notify' — nothing is cut at all. the run keeps going and keeps driving, and only your waitfor('collision') reacts. 'off' — the hit is ignored entirely. watch out. 'stop' cuts the motors every time, including the steering, so a macro reacting to the bump has to re-command whatever it wants moving. and 'notify' means a crash does nothing on its own — the car keeps driving into whatever it hit unless your macro stops it. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-collisionmode">collision(mode)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Changes what a detected impact does to this run. This only matters while the Hub tab's crash guard is armed — that toggle is what actually watches the accelerometer; this call only changes what happens once it reports a hit. Restored to whatever it was before your macro touched it once the run ends.</p>
+<p><code>mode</code> is one of four:</p>
+<ul>
+<li><code>'abort'</code> — the default. The motors are cut and the run ends.</li>
+<li><code>'stop'</code> — the motors are cut and the run keeps going, so a <code>waitFor('collision')</code> in your macro is what hears about the bump. This is the mode for a bumper-bot: drive, wait for the knock, back off, carry on.</li>
+<li><code>'notify'</code> — nothing is cut at all. The run keeps going and keeps driving, and only your <code>waitFor('collision')</code> reacts.</li>
+<li><code>'off'</code> — the hit is ignored entirely.</li>
+</ul>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span><code>'stop'</code> cuts the motors every time, including the steering, so a macro reacting to the bump has to re-command whatever it wants moving. And <code>'notify'</code> means a crash does nothing on its own — the car keeps driving into whatever it hit unless your macro stops it.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="collisionthreshold(mg) what it does. changes the mg threshold that counts as a hit, for the duration of the run — 1800 mg by default, which is a real crash and far too deaf for a bumper. lowering it also re-tunes the hub's own filtering to match, because the hub, not this page, is what decides which readings are worth sending; a threshold change that did not move that filter would be invisible. restored afterwards, subscription included, the same as collision(mode). watch out. a low threshold means more accelerometer traffic on the link for the whole run, and hard driving over a bump starts registering as a crash. whichever value you pick, the crash guard on the hub tab still has to be armed for any of it to fire. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-collisionthresholdmg">collisionThreshold(mg)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Changes the mG threshold that counts as a hit, for the duration of the run — 1800 mG by default, which is a real crash and far too deaf for a bumper. Lowering it also re-tunes the hub's own filtering to match, because the hub, not this page, is what decides which readings are worth sending; a threshold change that did not move that filter would be invisible. Restored afterwards, subscription included, the same as <code>collision(mode)</code>.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>A low threshold means more accelerometer traffic on the link for the whole run, and hard driving over a bump starts registering as a crash. Whichever value you pick, the crash guard on the Hub tab still has to be armed for any of it to fire.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="print(...args) what it does. writes its arguments, joined with a space, to the status line below the run/stop buttons — the macro's own equivalent of a console log, since there is no console here. watch out. capped at 20 calls a second. past that, further calls in the same second are silently dropped and one line is written to the debug log saying so, rather than flooding the status line. path / unsafe. works under either drive family · not unsafe.">
+<h3 id="g-printargs">print(...args)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Writes its arguments, joined with a space, to the status line below the Run/Stop buttons — the macro's own equivalent of a console log, since there is no console here.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Capped at 20 calls a second. Past that, further calls in the same second are silently dropped and one line is written to the Debug log saying so, rather than flooding the status line.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · not unsafe.</p>
+</section>
+<section class="ctrl" data-t="unsafe.raw(bytes, key) what it does. sends an arbitrary byte array as a raw lwp frame — the same thing the debug tab's port probe does, from code instead of by hand. path / unsafe. works under either drive family · unsafe.">
+<h3 id="g-unsaferawbytes-key">unsafe.raw(bytes, key)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sends an arbitrary byte array as a raw LWP frame — the same thing the Debug tab's port probe does, from code instead of by hand.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · <strong>unsafe.</strong></p>
+</section>
+<section class="ctrl" data-t="unsafe.writedirect(port, mode, values) what it does. sends a writedirectmodedata frame to any port, mode and value list you choose. path / unsafe. works under either drive family · unsafe.">
+<h3 id="g-unsafewritedirectport-mode-values">unsafe.writeDirect(port, mode, values)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sends a WriteDirectModeData frame to any port, mode and value list you choose.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · <strong>unsafe.</strong></p>
+</section>
+<section class="ctrl" data-t="unsafe.subscribe(port, mode, delta) what it does. subscribes to an arbitrary port and mode. still goes through the same one-mode-per-port bookkeeping every other subscription in this app does, and is released automatically when the run ends even if you never call unsafe.unsubscribe yourself. path / unsafe. works under either drive family · unsafe.">
+<h3 id="g-unsafesubscribeport-mode-delta">unsafe.subscribe(port, mode, delta)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Subscribes to an arbitrary port and mode. Still goes through the same one-mode-per-port bookkeeping every other subscription in this app does, and is released automatically when the run ends even if you never call <code>unsafe.unsubscribe</code> yourself.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · <strong>unsafe.</strong></p>
+</section>
+<section class="ctrl" data-t="unsafe.unsubscribe(port, mode) what it does. releases a subscription started with unsafe.subscribe. path / unsafe. works under either drive family · unsafe.">
+<h3 id="g-unsafeunsubscribeport-mode">unsafe.unsubscribe(port, mode)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Releases a subscription started with <code>unsafe.subscribe</code>.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · <strong>unsafe.</strong></p>
+</section>
+<section class="ctrl" data-t="unsafe.gotoposition(port, angle, speed, maxpower, endstate) what it does. sends gotoabsoluteposition. watch out. this is known to crash this hub's firmware when sent to the steer motor. it exists for deliberate probing, not for driving. path / unsafe. works under either drive family · unsafe.">
+<h3 id="g-unsafegotopositionport-angle-speed-maxpower-endstate">unsafe.gotoPosition(port, angle, speed, maxPower, endState)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sends GotoAbsolutePosition.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>This is known to crash this hub's firmware when sent to the steer motor. It exists for deliberate probing, not for driving.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · <strong>unsafe.</strong></p>
+</section>
+<section class="ctrl" data-t="unsafe.speedfordegrees(port, degrees, speed, maxpower, endstate) what it does. sends startspeedfordegrees — the same suspect command family as unsafe.gotoposition, kept for probing only. path / unsafe. works under either drive family · unsafe.">
+<h3 id="g-unsafespeedfordegreesport-degrees-speed-maxpower-endstate">unsafe.speedForDegrees(port, degrees, speed, maxPower, endState)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sends StartSpeedForDegrees — the same suspect command family as <code>unsafe.gotoPosition</code>, kept for probing only.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · <strong>unsafe.</strong></p>
+</section>
+<section class="ctrl" data-t="unsafe.linkdrivemotors() what it does. fuses the two drive motors into a hub-side virtual port. watch out. this has reliably knocked this hub off the air within 0.1 to 1.1 seconds in every session that tried it. it is kept only so the failure is reachable for anyone who needs to confirm it again; it is not a shortcut for linked drive. path / unsafe. works under either drive family · unsafe.">
+<h3 id="g-unsafelinkdrivemotors">unsafe.linkDriveMotors()</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Fuses the two drive motors into a hub-side virtual port.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>This has reliably knocked this hub off the air within 0.1 to 1.1 seconds in every session that tried it. It is kept only so the failure is reachable for anyone who needs to confirm it again; it is not a shortcut for linked drive.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · <strong>unsafe.</strong></p>
+</section>
+<section class="ctrl" data-t="unsafe.unlinkdrivemotors() what it does. reverses unsafe.linkdrivemotors(). path / unsafe. works under either drive family · unsafe.">
+<h3 id="g-unsafeunlinkdrivemotors">unsafe.unlinkDriveMotors()</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Reverses <code>unsafe.linkDriveMotors()</code>.</p>
+<p><strong>Path / unsafe.</strong> Works under either drive family · <strong>unsafe.</strong></p>
+</section>
+</section>
+<section class="group"><h2 id="g-debug-tab">Debug tab</h2>
+<p>You will not normally need this tab, and it is the only place that can write whatever you type straight to the hub.</p>
+<section class="ctrl" data-t="debug log not a control. a running list of everything the page sends and receives, plus its own notes. copy what it does. puts the log on the clipboard, so you can paste it into a bug report. clear what it does. empties the log. copy writes the whole log to the clipboard and notes that it did so as a new line at the bottom, so you can tell it worked. clear empties the panel only — it does not tell the hub anything and does not affect what is being recorded next.">
+<h3 id="g-debug-log">Debug log</h3>
+<p>Not a control. A running list of everything the page sends and receives, plus its own notes.</p>
+<h4 id="g-copy">Copy</h4>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Puts the log on the clipboard, so you can paste it into a bug report.</p>
+<h4 id="g-clear">Clear</h4>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Empties the log.</p>
+<p>Copy writes the whole log to the clipboard and notes that it did so as a new line at the bottom, so you can tell it worked. Clear empties the panel only — it does not tell the hub anything and does not affect what is being recorded next.</p>
+</section>
+<section class="ctrl" data-t="raw port probe (fold-out, &quot;can drop the hub connection&quot;) what it does. sends arbitrary instructions to an arbitrary part of the hub. it exists because that is how this page's authors worked out what the hub responds to. port 0x — which part of the hub to address, written in hexadecimal. starts at 35. mode — which of that part's several behaviours to use. whole number, 0 to 10, starting at 0. value — the number to send. 0 to 255, starting at 100. send — sends port, mode and value as written. send 0 — sends the same port and mode with a value of zero, which is usually the &quot;off&quot; or &quot;stop&quot; case. sweep modes on port — sends the value at modes 0 through 5 in turn, about a second apart, switching off between each, and writes each step to the log. useful for finding out what a port responds to. multi-value (csv) — a list of numbers separated by commas, for instructions that take several values at once. starts at 100,0,0,0,0,0. send csv — sends that list to the port and mode above. anything in the list that is not a number is dropped. watch out. the heading says it plainly: these writes can drop the hub connection, and the hub may need a power cycle afterwards. there is no confirmation step and no undo. do not use this with a model on the floor.">
+<h3 id="g-raw-port-probe-fold-out-can-drop-the-hub-connection">Raw port probe (fold-out, "can drop the hub connection")</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Sends arbitrary instructions to an arbitrary part of the hub. It exists because that is how this page's authors worked out what the hub responds to.</p>
+<ul>
+<li><strong>port 0x</strong> — which part of the hub to address, written in hexadecimal. Starts at <code>35</code>.</li>
+<li><strong>mode</strong> — which of that part's several behaviours to use. Whole number, 0 to 10, starting at 0.</li>
+<li><strong>value</strong> — the number to send. 0 to 255, starting at 100.</li>
+<li><strong>Send</strong> — sends port, mode and value as written.</li>
+<li><strong>Send 0</strong> — sends the same port and mode with a value of zero, which is usually the "off" or "stop" case.</li>
+<li><strong>Sweep modes on port</strong> — sends the value at modes 0 through 5 in turn, about a second apart, switching off between each, and writes each step to the log. Useful for finding out what a port responds to.</li>
+<li><strong>multi-value (csv)</strong> — a list of numbers separated by commas, for instructions that take several values at once. Starts at <code>100,0,0,0,0,0</code>.</li>
+<li><strong>Send CSV</strong> — sends that list to the port and mode above. Anything in the list that is not a number is dropped.</li>
+</ul>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>The heading says it plainly: these writes can drop the hub connection, and the hub may need a power cycle afterwards. There is no confirmation step and no undo. Do not use this with a model on the floor.</p>
+</section>
+<section class="ctrl" data-t="port introspection — read-only (fold-out) what it does. asks a port what it is and what it can report, without ever writing a value to it. this is the safe half of the probe: everything here is a question. port 0x — which part of the hub to ask about, in hexadecimal. starts at 3e. mode — which of that part's behaviours to watch. whole number, 0 to 10. delta — how much a value must change before the hub reports it again. 1 or more. describe port — asks the port how many modes it has, then walks every one of them asking for its name, its range and its unit, writing each answer to the log. takes a couple of seconds. read value once — asks the port for its current value and logs the reply. watch mode — subscribes to the port at the mode and delta above, so every change is logged as it happens. stop watching — ends that subscription. watch out. a delta of 0 would ask the hub to report continuously and has been seen to take the link down. the page refuses it and says so. watch out. a port streams one mode at a time. watching a port that the drive tab's measured, the motion tab or the steering is already using takes the stream away from them, and they will report it as unavailable. stop watching to give it back.">
+<h3 id="g-port-introspection-read-only-fold-out">Port introspection — read-only (fold-out)</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Asks a port what it is and what it can report, without ever writing a value to it. This is the safe half of the probe: everything here is a question.</p>
+<ul>
+<li><strong>port 0x</strong> — which part of the hub to ask about, in hexadecimal. Starts at <code>3e</code>.</li>
+<li><strong>mode</strong> — which of that part's behaviours to watch. Whole number, 0 to 10.</li>
+<li><strong>delta</strong> — how much a value must change before the hub reports it again. 1 or more.</li>
+<li><strong>Describe port</strong> — asks the port how many modes it has, then walks every one of them asking for its name, its range and its unit, writing each answer to the log. Takes a couple of seconds.</li>
+<li><strong>Read value once</strong> — asks the port for its current value and logs the reply.</li>
+<li><strong>Watch mode</strong> — subscribes to the port at the mode and delta above, so every change is logged as it happens.</li>
+<li><strong>Stop watching</strong> — ends that subscription.</li>
+</ul>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>A delta of 0 would ask the hub to report continuously and has been seen to take the link down. The page refuses it and says so.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>A port streams one mode at a time. Watching a port that the Drive tab's <strong>Measured</strong>, the Motion tab or the steering is already using takes the stream away from them, and they will report it as unavailable. Stop watching to give it back.</p>
+</section>
+</section>
+<section class="group"><h2 id="g-when-something-is-wrong">When something is wrong</h2>
+<p><strong>It will not connect.</strong> Check the browser first — this needs Web Bluetooth, which Chrome and Edge have on Android, macOS, Windows and ChromeOS, and which Safari and Firefox do not have at all. On an iPhone or iPad every browser uses Safari's engine, so you need a Web Bluetooth browser such as Bluefy. If the browser is right, the message under the Connect button and the full text in the <strong>Hub</strong> tab say what went wrong. Make sure the hub is charged and switched on.</p>
+<p><strong>Nothing moves.</strong> Work down this list.</p>
+<ol>
+<li>Is the pad button in the top bar showing <strong>ARMED</strong>? If it says OFF, the gamepad is not driving anything. Press it.</li>
+<li>Does the pad readout beside it say "not connected"? Press a button on the controller — browsers only reveal a pad after it has been used.</li>
+<li>Check <strong>max speed</strong> in Setup. At its lowest setting the car is very slow, not stopped, but it can look like nothing is happening on carpet.</li>
+<li>Check <strong>deadzone</strong> in Setup. Set very high, small stick movements are ignored entirely.</li>
+<li>Look at the battery reading in the top bar, and at the <code>q</code> number beside it. A <code>q</code> number that climbs and stays up means the link is saturated. Turn <strong>telemetry</strong> and <strong>crash guard</strong> off in the Hub tab.</li>
+<li>Try FWD on a motor row in the Drive tab. If that moves the model and the gamepad does not, the problem is in the pad, not the hub.</li>
+</ol>
+<p><strong>The car stops by itself.</strong> Several things stop it deliberately.</p>
+<ul>
+<li><strong>crash guard</strong> in the Hub tab cuts the motors on a sharp impact. If it is ON, a hard bump or a drop onto a table is enough.</li>
+<li>Losing the gamepad stops the car — a flat controller, a Bluetooth dropout, or the pad going to sleep.</li>
+<li>Hiding the browser tab or switching to another app stops the car.</li>
+<li>Any error inside the control loop stops the car.</li>
+<li>If the steering was in <strong>Steer</strong> mode and lost its position feedback, it drops back to <strong>Raw</strong> on its own. Check the mode dropdown in the Drive tab — if it changed without you touching it, that is what happened.</li>
+</ul>
+<p><strong>The wheels turn the wrong way.</strong> Which fix depends on what is wrong.</p>
+<ul>
+<li>The whole car drives backwards, or one drive motor fights the other: use <strong>Motor direction</strong> in the Setup tab and set the offending motor to REVERSED. That setting is remembered.</li>
+<li>Steering goes left when you push right: tick <strong>invert steering direction</strong> under Advanced steering in the Setup tab.</li>
+<li>The wheels are straight on screen but crooked in reality: jog them straight with <strong>Steer jog</strong> in the Setup tab, then press <strong>Set zero</strong>.</li>
+<li>In Tracked mode, turning and throttle come out swapped: one drive motor must be set to REVERSED. The live readout on the Drive tab says so when it detects this.</li>
+</ul>
+</section>
+    <p id="find-none" class="find__none" hidden>Nothing matches. Try a word from the label on screen — “brake”, “trim”, “telemetry”.</p>
+  </main>
+
+  <script>
+  // Filtering, not jumping. Someone on this page is holding a car and wants one
+  // answer, so a match hides everything else rather than scrolling to the first
+  // hit and leaving them to find the rest.
+  (() => {
+    const find = document.getElementById('find');
+    const count = document.getElementById('find-count');
+    const none = document.getElementById('find-none');
+    const controls = [...document.querySelectorAll('.ctrl')];
+    const groups = [...document.querySelectorAll('.group')];
+    const tocItems = [...document.querySelectorAll('.toc a')];
+
+    function apply(q) {
+      const term = q.trim().toLowerCase();
+      if (!term) {
+        for (const c of controls) c.hidden = false;
+        for (const g of groups) g.hidden = false;
+        for (const a of tocItems) a.parentElement.hidden = false;
+        count.textContent = '';
+        none.hidden = true;
+        return;
+      }
+      let hits = 0;
+      for (const c of controls) {
+        const match = (c.dataset.t || '').includes(term);
+        c.hidden = !match;
+        if (match) hits++;
+      }
+      // A section heading with nothing under it is just noise in the results.
+      for (const g of groups) {
+        g.hidden = ![...g.querySelectorAll('.ctrl')].some((c) => !c.hidden);
+      }
+      for (const a of tocItems) {
+        const target = document.getElementById(a.hash.slice(1));
+        const block = target?.closest('.ctrl') ?? target?.closest('.group');
+        a.parentElement.hidden = !!block?.hidden;
+      }
+      count.textContent = hits + (hits === 1 ? ' match' : ' matches');
+      none.hidden = hits > 0;
+    }
+
+    find.addEventListener('input', () => apply(find.value));
+    // Escape clears, because a filtered page with an empty box is a trap.
+    find.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { find.value = ''; apply(''); }
+    });
+
+    // Mark the section being read, so the contents list says where you are.
+    const spy = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const id = e.target.id;
+        for (const a of tocItems) a.classList.toggle('on', a.hash === '#' + id);
+      }
+    }, { rootMargin: '-10% 0px -80% 0px' });
+    for (const h of document.querySelectorAll('.docbody h2, .docbody h3')) spy.observe(h);
+  })();
+  </script>
+
+  <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+  <script>
+    kofiWidgetOverlay.draw('olexandrchimera', {
+      'type': 'floating-chat',
+      'floating-chat.donateButton.text': 'Support me',
+      'floating-chat.donateButton.background-color': '#fcbf47',
+      'floating-chat.donateButton.text-color': '#323842'
+    });
+  </script>
+</body>
+</html>

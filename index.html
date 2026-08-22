@@ -1,0 +1,763 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Technic Move Hub 88019 controller — drive your own MOC from a browser</title>
+  <meta name="description" content="Drive the LEGO Technic Move Hub 88019 from Chrome over Web Bluetooth — in the set it came from or in your own MOC, which the official app cannot do. No install. 1167 tests." />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="canonical" href="https://move-hub.site/" />
+  <link rel="alternate" type="text/markdown" href="/llms.txt" title="llms.txt" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://move-hub.site/" />
+  <meta property="og:title" content="Technic Move Hub 88019 controller — drive your own MOC from a browser" />
+  <meta property="og:description" content="A browser tab is the remote control — for the set model and for your own MOC. Web Bluetooth, no install, open source, reverse-engineered from the wire." />
+  <meta property="og:image" content="https://move-hub.site/assets/hub.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Technic Move Hub 88019 controller — drive your own MOC from a browser" />
+  <meta name="twitter:description" content="A browser tab is the remote control — for the set model and for your own MOC. Web Bluetooth, no install, open source." />
+  <meta name="twitter:image" content="https://move-hub.site/assets/hub.jpg" />
+
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121212" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Technic Move Hub Controller",
+        "applicationCategory": "BrowserApplication",
+        "operatingSystem": "Android, macOS, Windows, ChromeOS",
+        "url": "https://move-hub.site/",
+        "description": "Browser-based controller for the LEGO Technic Move Hub 88019 over Web Bluetooth, for the set model and for custom builds (MOCs) the official app cannot drive. Touch controls, gamepad support, lights, telemetry and a raw protocol log.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "featureList": [
+          "Web Bluetooth control with no install",
+          "Custom builds (MOCs): direct port modes that need no set profile and no end-stop calibration",
+          "Steering zero, throw, gain and direction set by the builder",
+          "Touch and gamepad driving",
+          "Combined speed and steering frame handled by the hub",
+          "Per-motor, tank and independent drive modes",
+          "Six-lamp array and status LED control",
+          "Battery, tilt and accelerometer telemetry",
+          "Collision detection",
+          "Raw LWP 3.0 protocol log"
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What hardware does this control?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The LEGO Technic Move Hub, part number 88019, which advertises itself over Bluetooth as \"Technic Move\". It ships in Technic sets built around remote driving and carries two drive motors, a steering motor, a six-lamp array, an RGB status LED, an accelerometer, a gyroscope, a tilt sensor and a gesture sensor." }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need to install anything?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. It is a web page that talks to the hub through the Web Bluetooth API. There is no app, no account and no install step. Open the page in a supported browser and press Connect." }
+          },
+          {
+            "@type": "Question",
+            "name": "Which browsers work?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Any browser with Web Bluetooth: Chrome and Edge on Android, macOS, Windows and ChromeOS, plus Chromium forks such as Opera. Safari and Firefox do not implement Web Bluetooth, so they cannot connect. On iOS every browser uses Safari's engine, so iPhones and iPads need a third-party Web Bluetooth browser such as Bluefy." }
+          },
+          {
+            "@type": "Question",
+            "name": "Which LEGO models can it drive?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Any model built around the Technic Move Hub, which contains its own two drive motors and a steering motor. This project was developed and tested against the hub from set 42214 Lamborghini Revuelto Super Sports Car, the revised version now shipping. The same hub debuted in 42176 Porsche GT4 e-Performance Race Car. Models rebuilt from those parts work too, and newer sets carrying the same hub should as well." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use the Technic Move Hub 88019 in my own MOC or custom build?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. This page never assumes a set. Three of its four drive modes \u2014 linked, independent and tracked \u2014 write to the hub's motor ports directly, so nothing has to match the model the hub shipped in. The builder sets steering zero, throw from 5 to 720 degrees, gain, deadband and per-motor direction, and a jog control aligns the rack mechanically. Only the fourth mode, the hub's own combined frame, runs the end-stop calibration sweep that assumes set-shaped steering." }
+          },
+          {
+            "@type": "Question",
+            "name": "Why can't the official Powered Up or Control+ app drive my custom build with this hub?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The official app drives the hub through the profile of the set it shipped in, and that profile includes a steering calibration. Change the rack, the throw or the gearing and the calibration no longer describes the model. Reviewing set 42214 for New Elementary, Toby Mac wrote that \"the hub can't be used in other apps for custom programming\". This page drives the same hub over the same Bluetooth protocol without a set profile." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does Pybricks support the Technic Move Hub 88019?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Not as a hub you can flash. The Pybricks documentation states that the Technic Move Hub \"requires a special password to update the firmware, so Pybricks cannot be installed on it\"; it can only be driven as a peripheral from a second, separate Pybricks hub. BrickController 2 lists SBrick, BuWizz, the Powered Up, Boost, Technic and WeDo 2.0 hubs, and does not list this one. SBrick and BuWizz are separate receivers, so they replace the hub rather than use its three built-in motors. A browser talking LEGO Wireless Protocol 3.0 needs no extra hardware and no firmware change." }
+          },
+          {
+            "@type": "Question",
+            "name": "My model steers differently from the set. Will the calibration fail?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Not in the direct drive modes, because they never calibrate. Steering is a software loop on this page: you jog the rack to where straight actually is, press Set zero, and set the maximum angle anywhere from 5 to 720 degrees, with adjustable gain, deadband, auto-return and inversion. A runaway cut-out stops the motor if the position feedback stops matching the command. Avoid the end-stop sweep by selecting a mode other than the hub's own combined frame before driving." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can it drive a tracked model or a build with no steering at all?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Tracked mode counter-rotates the two drive motors from one stick for tank steering, and independent mode puts each motor on its own control so the second motor can do a job other than driving. The steering motor can be left out of the model or jogged by hand; neither mode requires it." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use a gamepad?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes, and it is the intended way to drive. Any controller the browser exposes through the Gamepad API works, including an Xbox pad over Bluetooth or USB and PlayStation pads. Triggers drive, the stick steers, every action is remappable, and the control loop stops the car if the pad disconnects." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is this an official LEGO product?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. It is an independent open-source project, not affiliated with or endorsed by the LEGO Group. LEGO and Technic are trademarks of the LEGO Group." }
+          },
+          {
+            "@type": "Question",
+            "name": "How was the protocol worked out?",
+            "acceptedAnswer": { "@type": "Answer", "text": "From the wire, by logging every frame and reading the replies. The hub speaks LEGO Wireless Protocol 3.0 over a single GATT characteristic. Ports are discovered at runtime rather than hardcoded, and the combined drive frame was settled by asking the hub to describe its own port modes after four write-side probes had failed." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div id="topbar">
+  <header id="chrome">
+    <button id="connect" type="button" disabled>Connect hub</button>
+    <button id="chrome-status" type="button" hidden aria-label="Link status — open the Hub tab">
+      <span id="state-dot"></span><span id="status-brief"></span>
+    </button>
+    <span id="battery" hidden>
+      <span class="vh">hub battery </span>
+      <svg class="bat" viewBox="0 0 26 12" aria-hidden="true" focusable="false">
+        <rect class="bat__shell" x="0.6" y="0.6" width="21.8" height="10.8" rx="2" />
+        <rect class="bat__cap" x="23.4" y="3.6" width="2.6" height="4.8" rx="1" />
+        <rect class="bat__fill" id="bat-fill" x="2.2" y="2.2" width="18.6" height="7.6" rx="1" />
+      </svg>
+      <span id="bat-pct">—</span><span id="queue-depth"></span>
+    </span>
+    <button id="gp-enable" type="button" hidden aria-pressed="false">
+      <span id="gp-label">PAD</span><span id="gp-status"></span>
+    </button>
+  </header>
+
+  <nav id="tabbar" hidden aria-label="Sections">
+    <button type="button" data-go="drive" class="on" aria-current="true">Drive</button>
+    <button type="button" data-go="setup">Setup</button>
+    <button type="button" data-go="lights">Lights</button>
+    <button type="button" data-go="hub">Hub</button>
+    <button type="button" data-go="motion">Motion</button>
+    <button type="button" data-go="macros">Macros</button>
+    <button type="button" data-go="debug">Debug</button>
+    <a id="tab-guide" href="/guide">Guide</a>
+  </nav>
+  </div>
+
+  <main>
+    <section id="precon">
+      <p id="support"></p>
+      <pre id="status" role="status" hidden>idle</pre>
+
+      <article id="landing">
+        <header class="lede">
+          <p class="kicker">LEGO® Technic™ Move Hub · 88019</p>
+          <h1>Thirteen bytes<br />and your car moves.</h1>
+          <p class="sub">
+            Chrome writes those thirteen bytes to the hub over Bluetooth — with an
+            <b>Xbox controller</b> if you have one. No app, no account, no install.
+          </p>
+
+          <ul class="verdict">
+            <li>
+              <b>The set it came in</b>
+              <span>42214 Lamborghini Revuelto, 42176 Porsche GT4, built as designed.</span>
+              <i>drives</i>
+            </li>
+            <li>
+              <b>A model you built</b>
+              <span>Any shape around the same hub. No set profile, no calibration
+                sweep — <a href="#moc">you set the steering zero and the throw</a>.</span>
+              <i>drives</i>
+            </li>
+            <li>
+              <b>The official app</b>
+              <span>Drives the hub through one set's profile. Change the rack and its
+                calibration stops describing the model.</span>
+              <i class="no">can't</i>
+            </li>
+          </ul>
+        </header>
+
+        <p class="cta-row">
+          <button id="cta-connect" type="button">Connect a hub</button>
+          <a class="ghost" href="/guide">Controls guide</a>
+        </p>
+        <p class="micro" id="cta-note"></p>
+
+        <figure class="wire" aria-label="The live drive frame: the thirteen bytes this page writes to the hub">
+          <div class="wire__scroll">
+            <div class="wire__grid">
+              <div class="wire__ruler" aria-hidden="true">
+                <span>00</span><span>01</span><span>02</span><span>03</span><span>04</span>
+                <span>05</span><span>06</span><span>07</span><span>08</span><span>09</span>
+                <span>0a</span><span>0b</span><span>0c</span>
+              </div>
+              <div class="wire__bytes" id="wire-bytes" role="img"
+                   aria-label="A thirteen byte LEGO Wireless Protocol frame">
+                <span>0d</span><span>00</span><span class="k">81</span><span class="k">36</span>
+                <span>11</span><span>51</span><span>00</span><span>03</span><span>00</span>
+                <span class="v-speed" id="b-speed">00</span>
+                <span class="v-steer" id="b-steer">00</span>
+                <span class="v-light" id="b-light">04</span><span>00</span>
+              </div>
+              <div class="wire__marks" aria-hidden="true">
+                <span class="m-port">write to the drive port</span>
+                <span class="m-speed">speed</span>
+                <span class="m-steer">steer</span>
+                <span class="m-light">lights</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="wire__drive">
+            <label>speed
+              <input id="w-speed" type="range" min="-100" max="100" value="0" step="1" />
+              <output id="w-speed-out">0</output>
+            </label>
+            <label>steering
+              <input id="w-steer" type="range" min="-100" max="100" value="0" step="1" />
+              <output id="w-steer-out">0</output>
+            </label>
+            <label>lights
+              <select id="w-light">
+                <option value="4" selected>off</option>
+                <option value="0">front + rear</option>
+                <option value="1">front, rear on braking</option>
+                <option value="5">rear on braking</option>
+              </select>
+            </label>
+          </div>
+        </figure>
+
+
+        <section class="sec" id="hardware" aria-labelledby="h-hardware">
+          <h2 id="h-hardware"><i>01</i> The hardware</h2>
+          <div class="sec__split">
+            <figure class="shot">
+              <img src="assets/module.png" alt="The LEGO Technic Move Hub: a grey brick with a USB-C charging port, a green status light, Technic pin holes along its length and motor axle outputs at each end."
+                   width="581" height="480" fetchpriority="high" decoding="async"
+                   onerror="this.closest('figure').remove()" />
+            </figure>
+            <table class="spec">
+              <tbody>
+                <tr><th>Drive motors</th><td>2, planetary geared, optical encoders</td></tr>
+                <tr><th>Steering motor</th><td>1, planetary geared, magnetic position sensor</td></tr>
+                <tr><th>Lamp outputs</th><td>6, individually addressable, on internal light pipes</td></tr>
+                <tr><th>Status LED</th><td>RGB, 10 colours</td></tr>
+                <tr><th>Motion</th><td>accelerometer, gyroscope, tilt, gesture</td></tr>
+                <tr><th>Controller</th><td>TI CC2642 — Bluetooth and motor control on one chip</td></tr>
+                <tr><th>Motor drivers</th><td>DRV8411 dual H-bridge per motor, bridges paralleled</td></tr>
+                <tr><th>Power</th><td>USB-C, rechargeable</td></tr>
+                <tr><th>External ports</th><td>none — everything is on board</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <h3>Which one you have</h3>
+          <ul class="setlist">
+            <li><b>42214</b> Lamborghini Revuelto Super Sports Car
+              <span>The revised hub, and the one shipping now. Everything here was
+                built and tested against it.</span></li>
+            <li><b>42176</b> Porsche GT4 e-Performance Race Car
+              <span>Where the hub debuted, in its original revision. Not tested here,
+                but the same hub and the same protocol.</span></li>
+          </ul>
+          <p class="micro">Newer sets carrying the same hub should work too.</p>
+        </section>
+
+        <section class="sec" id="moc" aria-labelledby="h-moc">
+          <h2 id="h-moc"><i>02</i> Your own model</h2>
+          <p class="answer">
+            <b>A model you built yourself drives from this page.</b> It does not have
+            to look like the set the hub came in, and nothing here has to be told
+            which set that was.
+          </p>
+          <p>
+            The official app cannot do this. It drives the hub through the profile of
+            one particular set, and that profile carries a steering calibration — change
+            the rack, the throw or the gearing and the calibration no longer describes
+            the model. Reviewing 42214 for <i>New Elementary</i>, Toby Mac put it as
+            <q>the hub can't be used in other apps for custom programming</q>.
+          </p>
+          <p>
+            This page has no set profile to fail. Three of its four drive modes write to
+            the hub's motor ports directly — no arming, no calibration sweep, no
+            assumption about what the wheels are attached to.
+          </p>
+          <table class="spec">
+            <tbody>
+              <tr><th>Independent</th><td>Each drive motor on its own control, so the
+                second motor can raise, wind or tip something instead of driving.</td></tr>
+              <tr><th>Tracked</th><td>The two motors counter-rotated from one stick —
+                tank steering, no steering rack in the model at all.</td></tr>
+              <tr><th>Linked</th><td>Both drive motors together, steering handled by the
+                page's own position loop.</td></tr>
+              <tr><th>Combined frame</th><td>The hub's own thirteen-byte frame. This is
+                the one that sweeps the steering rack to both end stops on arming, so
+                keep it for set-shaped steering and use the three above for a rebuild.</td></tr>
+            </tbody>
+          </table>
+          <h3>What the builder sets, not the set</h3>
+          <ul class="setlist">
+            <li><b>Where straight is</b>
+              <span>Jog the rack by hand or by button until the wheels point straight,
+                then press Set zero. The zero is held in software, not read from the hub.</span></li>
+            <li><b>How far it turns</b>
+              <span>Maximum angle anywhere from 5° to 720°, with gain, deadband,
+                auto-return on release and inversion, plus a runaway cut-out that kills
+                the motor when the position feedback stops matching the command.</span></li>
+            <li><b>Which way each motor runs</b>
+              <span>Direction is set per motor, and brake or coast on release is chosen
+                per motor too.</span></li>
+            <li><b>What it does on its own</b>
+              <span>Macros are short JavaScript programs — drive, motors, lights,
+                sensor reads, waits — run in a worker against a
+                <a href="/guide#g-macros-tab">36-call API</a>, with raw frame writes
+                behind a per-macro flag.</span></li>
+          </ul>
+          <h3>Why not the usual alternatives</h3>
+          <p>
+            <b>Pybricks</b> cannot be installed on this hub: its documentation states the
+            hub <q>requires a special password to update the firmware</q>, and it can only
+            be driven as a peripheral from a second Pybricks hub you also have to own.
+            <b>BrickController 2</b> lists SBrick, BuWizz and the Powered Up, Boost,
+            Technic and WeDo 2.0 hubs — not this one. <b>SBrick</b> and <b>BuWizz</b> are
+            separate receivers, so they replace the hub rather than use the three motors
+            already inside it. A browser speaking LEGO Wireless Protocol 3.0 needs no
+            extra hardware and no firmware change.
+          </p>
+          <p class="links">
+            <a href="https://docs.pybricks.com/en/stable/pupdevices/technicmovehub.html" rel="noopener noreferrer" target="_blank">Pybricks on the Technic Move Hub</a>
+            <a href="https://www.newelementary.com/2025/08/reviews-42212-ferrari-fxx-k-42213-ford.html" rel="noopener noreferrer" target="_blank">New Elementary's 42214 review</a>
+            <a href="https://github.com/imurvai/brickcontroller2" rel="noopener noreferrer" target="_blank">BrickController 2's supported receivers</a>
+          </p>
+        </section>
+
+        <section class="sec" id="how" aria-labelledby="h-how">
+          <h2 id="h-how"><i>03</i> How it was worked out</h2>
+          <p class="answer">
+            The hub speaks <b>LEGO Wireless Protocol 3.0</b> over a single Bluetooth
+            characteristic. Ports are not hardcoded here — they are discovered at
+            runtime from the hub's own inventory of what is attached.
+          </p>
+          <p>
+            The drive frame took longer. Four separate attempts to find it by writing
+            bytes and watching for movement produced nothing at all, because this port
+            acknowledges anything well-formed whether or not it acts on it. What
+            settled it was asking the hub to describe its own port modes — and then
+            noticing that the lights field carries two initialisation commands the hub
+            requires before it will accept any drive frame.
+          </p>
+          <p>
+            An earlier version of this code masked those exact bytes out, on the
+            grounds that a published note called them dangerous. That safety measure
+            is the reason nothing worked for a day.
+          </p>
+          <p class="links">
+            <a href="https://github.com/DanieleBenedettelli/TechnicMoveHub" rel="noopener noreferrer" target="_blank">Benedettelli's reference notes</a>
+            <a href="https://lego.github.io/lego-ble-wireless-protocol-docs/" rel="noopener noreferrer" target="_blank">LEGO's protocol documentation</a>
+          </p>
+        </section>
+
+        <section class="sec" id="need" aria-labelledby="h-need">
+          <h2 id="h-need"><i>04</i> What you need</h2>
+          <table class="spec">
+            <tbody>
+              <tr><th>Hub</th><td>Technic Move Hub. It advertises as “Technic Move”.</td></tr>
+              <tr><th>Browser</th><td>Chrome or Edge on Android, macOS, Windows or ChromeOS.
+                Safari and Firefox do not implement Web Bluetooth; on iOS every browser
+                uses Safari's engine, so an iPhone needs one such as Bluefy.</td></tr>
+              <tr><th>Controller</th><td>Optional. Any pad the browser can see —
+                Xbox, PlayStation, Bluetooth or USB. Fully remappable.</td></tr>
+              <tr><th>Setup</th><td>None. No pairing in system settings, no app, no account.</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="sec sec--warn" id="safety" aria-labelledby="h-safety">
+          <h2 id="h-safety"><i>05</i> Before you drive</h2>
+          <p>This moves a real machine. These three were earned, not imagined.</p>
+          <ul class="warn">
+            <li><span><b>The stops are automatic, not a button.</b> Losing the link,
+              losing the pad, hiding the tab, a collision or any error inside the
+              control loop each cut the motors on their own.</span></li>
+            <li><span><b>Connecting calibrates the steering.</b> The default mode is
+              the hub's own combined frame, and arming it sweeps the rack to both end
+              stops — so leave the front wheels free to turn. In
+              <a href="#moc">a model of your own</a>, switch the mode first: the other
+              three never sweep.</span></li>
+            <li><span><b>Releasing a control stops what it drove.</b> The touch
+              controls and the pad both hand the motors back the moment you let
+              go.</span></li>
+          </ul>
+        </section>
+
+        <aside class="share" aria-label="Share this page">
+          <span class="share__k">Pass it on</span>
+          <button id="share-copy" type="button" hidden>Copy link</button>
+          <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fmove-hub.site%2F&amp;title=Technic%20Move%20Hub%2088019%20%E2%80%94%20drive%20your%20own%20LEGO%20MOC%20from%20a%20browser%20tab"
+             rel="noopener noreferrer" target="_blank">Reddit</a>
+          <a href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fmove-hub.site%2F&amp;t=Technic%20Move%20Hub%2088019%20%E2%80%94%20drive%20your%20own%20LEGO%20MOC%20from%20a%20browser%20tab"
+             rel="noopener noreferrer" target="_blank">Hacker News</a>
+          <a href="https://bsky.app/intent/compose?text=Technic%20Move%20Hub%2088019%20%E2%80%94%20drive%20your%20own%20LEGO%20MOC%20from%20a%20browser%20tab%20https%3A%2F%2Fmove-hub.site%2F"
+             rel="noopener noreferrer" target="_blank">Bluesky</a>
+        </aside>
+
+        <footer class="foot">
+          <p class="risk"><b>Use at your own risk.</b> Unofficial, provided as is, with
+            no warranty of any kind. A moving model can damage itself, its surroundings,
+            or someone standing in the way.</p>
+          <p class="micro">LEGO® and Technic™ are trademarks of the LEGO Group, which
+            does not sponsor, authorise or endorse this project. Set names and numbers
+            identify compatible hardware and nothing more.</p>
+        </footer>
+      </article>
+    </section>
+
+    <section id="dashboard" hidden>
+      <section class="tabpanel" data-tab="drive" aria-label="Drive">
+        <div id="d-panel" class="panel">
+          <div class="head-row">
+            <h2 class="lights-head">Controls</h2>
+          </div>
+
+          <label for="gp-drivemode">mode
+            <select id="gp-drivemode">
+              <option value="playvm" selected>Typical module behaviour — the hub drives itself</option>
+              <option value="linked">Linked — both motors together</option>
+              <option value="independent">Independent — A on triggers, B on stick</option>
+              <option value="tracked">Tracked — one stick, tank steering</option>
+            </select>
+          </label>
+
+          <p id="d-warn" hidden></p>
+
+          <div id="d-cluster">
+            <div class="d-gauges">
+              <div class="d-gauge">
+                <span class="lights-head">steer</span>
+                <svg id="d-dial" viewBox="0 0 100 56" aria-hidden="true" focusable="false">
+                  <path d="M6 50 A44 44 0 0 1 94 50" fill="none" stroke="currentColor" stroke-width="7" opacity="0.25" />
+                  <path id="d-dial-fill" d="M50 6 A44 44 0 0 1 50 6" fill="none" stroke="currentColor" stroke-width="7" />
+                  <line id="d-dial-bug" x1="50" y1="10" x2="50" y2="2" stroke="currentColor" stroke-width="3" />
+                </svg>
+                <span id="d-steer-val" class="d-val">0</span>
+              </div>
+              <div class="d-gauge">
+                <span class="lights-head">throttle</span>
+                <span id="d-throttle-val" class="d-val d-val--big">0</span>
+              </div>
+              <div class="d-gauge" data-mode="independent" hidden>
+                <span class="lights-head">throttle B</span>
+                <span id="d-throttleB-val" class="d-val d-val--big">0</span>
+              </div>
+            </div>
+
+            <div class="d-mirrors" data-mode="tracked" hidden>
+              <div class="d-mir">
+                <span class="lights-head">trk L</span>
+                <span class="mir"><i class="mir__mid"></i><i id="d-trkL" class="mir__fill"></i></span>
+              </div>
+              <div class="d-mir">
+                <span class="lights-head">trk R</span>
+                <span class="mir"><i class="mir__mid"></i><i id="d-trkR" class="mir__fill"></i></span>
+              </div>
+              <div class="d-mir">
+                <span class="lights-head">aux</span>
+                <span class="mir"><i class="mir__mid"></i><i id="d-aux" class="mir__fill"></i></span>
+              </div>
+            </div>
+
+            <div class="d-drive" data-mode="playvm linked independent">
+              <div id="d-steer">
+                <i class="d-steer__mid"></i>
+                <i class="d-steer__fill"></i>
+                <i class="d-steer__knob"></i>
+              </div>
+              <div id="d-throttle">
+                <i class="d-throttle__zero"></i>
+                <i class="d-throttle__fill"></i>
+                <i class="d-throttle__knob"></i>
+              </div>
+              <div id="d-throttleB" data-mode="independent" hidden>
+                <i class="d-throttle__zero"></i>
+                <i class="d-throttle__fill"></i>
+                <i class="d-throttle__knob"></i>
+              </div>
+            </div>
+
+            <div id="d-pad" data-mode="tracked" hidden>
+              <i class="d-pad__cross"></i>
+              <i class="d-pad__ring"></i>
+              <span id="d-pad-puck">MIX</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="d-measure-box" class="panel">
+          <div class="head-row">
+            <h2 class="lights-head">Measured</h2>
+            <button id="d-measure" type="button" aria-pressed="false">measured: OFF</button>
+          </div>
+          <pre id="d-att">roll — · pitch — · yaw —</pre>
+          <p id="d-measure-note" class="note"></p>
+        </div>
+
+        <div class="d-mode-box" data-mode="linked independent tracked">
+          <div id="steer-box">
+            <div class="head-row">
+              <h2 class="lights-head">Steering</h2>
+              <span id="st-readout">pos 0 → 0</span>
+            </div>
+            <div class="probe-btns">
+              <label for="st-mode">mode
+                <select id="st-mode">
+                  <option value="raw" selected>Raw — stick drives motor power</option>
+                  <option value="steer">Steer — hold an angle (needs a zero)</option>
+                </select>
+              </label>
+              <button id="st-center" type="button">Center</button>
+            </div>
+            <div class="probe-btns">
+              <button id="st-left" type="button">◀ LEFT</button>
+              <button id="st-right" type="button">RIGHT ▶</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-mode-box" data-mode="linked independent tracked">
+          <div id="motors"></div>
+        </div>
+
+        <div class="panel">
+          <h2 class="lights-head">Drive behaviour</h2>
+          <label for="release-mode">on release
+            <select id="release-mode">
+              <option value="brake">Brake — stop dead</option>
+              <option value="coast">Coast — free-wheel</option>
+            </select>
+          </label>
+          <pre id="gp-live">A 0 · steer 0 · trim 0</pre>
+        </div>
+      </section>
+
+      <section class="tabpanel" data-tab="setup" aria-label="Setup" hidden>
+        <div class="panel">
+          <h2 class="lights-head">Steering calibration</h2>
+          <button id="st-zero" type="button">Set zero</button>
+          <label>turn speed <input id="st-speed" type="range" min="10" max="100" value="40" /><output id="st-speed-out">40</output></label>
+          <details>
+            <summary>Advanced steering</summary>
+            <label>max angle <input id="st-angle" type="range" min="5" max="720" step="5" value="90" /><output id="st-angle-out">90°</output></label>
+            <label>kp <input id="st-kp" type="range" min="1" max="50" step="1" value="3" /><output id="st-kp-out">0.3</output></label>
+            <label>deadband <input id="st-dead" type="range" min="0" max="30" step="1" value="8" /><output id="st-dead-out">8°</output></label>
+            <label><input id="st-return" type="checkbox" checked /> auto-return to zero on release</label>
+            <label><input id="st-invert" type="checkbox" /> invert steering direction</label>
+          </details>
+        </div>
+
+        <div class="panel">
+          <h2 class="lights-head">Motor direction</h2>
+          <div id="motor-dirs"></div>
+          <h2 class="lights-head">Steer jog — mechanical alignment</h2>
+          <div id="steer-jog"></div>
+        </div>
+
+        <div class="panel">
+          <h2 class="lights-head">Gamepad feel</h2>
+          <pre id="gp-axes">axes: —</pre>
+          <label>deadzone <input id="gp-dz" type="range" min="0" max="50" step="1" value="15" /><output id="gp-dz-out">0.15</output></label>
+          <label>expo <input id="gp-expo" type="range" min="10" max="40" step="1" value="20" /><output id="gp-expo-out">2.0</output></label>
+          <label>max speed <input id="gp-max" type="range" min="20" max="100" value="100" /><output id="gp-max-out">100</output></label>
+          <label>steer gain <input id="gp-gain" type="range" min="20" max="100" value="100" /><output id="gp-gain-out">100</output></label>
+          <label>accel <select id="gp-ramp">
+            <option value="expo">expo (ease in)</option>
+            <option value="linear">linear</option>
+            <option value="instant">instant</option>
+          </select></label>
+          <label>accel rate <input id="gp-ramp-rate" type="range" min="60" max="600" step="20" value="220" /><output id="gp-ramp-rate-out">220</output></label>
+          <details>
+            <summary>Button mapping</summary>
+            <div id="gp-map"></div>
+            <button id="gp-reset" type="button">Reset to defaults</button>
+          </details>
+        </div>
+      </section>
+
+      <section class="tabpanel" data-tab="lights" aria-label="Lights" hidden>
+        <div id="lights-box">
+          <h2 class="lights-head">Lamps</h2>
+          <div id="lamps"></div>
+          <label>brightness <input id="lamp-bright" type="range" min="0" max="100" value="100" /><output id="lamp-bright-out">100</output></label>
+          <div class="probe-btns">
+            <button id="lamps-all" type="button">All on</button>
+            <button id="lamps-none" type="button">All off</button>
+          </div>
+          <button id="lamps-chase" type="button" class="tertiary">Chase 1→6 (diagnostic)</button>
+        </div>
+        <div class="panel">
+          <h2 class="lights-head">Status LED</h2>
+          <div id="leds">
+            <button type="button" data-color="9">Red</button>
+            <button type="button" data-color="6">Green</button>
+            <button type="button" data-color="3">Blue</button>
+            <button type="button" data-color="7">Yellow</button>
+            <button type="button" data-color="0">Off</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="tabpanel" data-tab="hub" aria-label="Hub" hidden>
+        <div class="panel">
+          <h2 class="lights-head">Connection</h2>
+          <pre id="status-full">idle</pre>
+          <details>
+            <summary>Discovered ports</summary>
+            <div id="ports">discovering ports…</div>
+          </details>
+        </div>
+        <div class="panel">
+          <h2 class="lights-head">Telemetry</h2>
+          <div class="probe-btns">
+            <button id="bat-refresh" type="button">refresh battery</button>
+            <button id="telemetry" type="button" aria-pressed="false">telemetry: OFF</button>
+            <button id="collision" type="button" aria-pressed="false">crash guard: OFF</button>
+          </div>
+          <pre id="tilt">tilt: — (turn telemetry on)</pre>
+        </div>
+      </section>
+
+      <section class="tabpanel" data-tab="motion" aria-label="Motion" hidden>
+        <div class="panel">
+          <h2 class="lights-head">Attitude</h2>
+          <canvas id="m-canvas" width="320" height="200"></canvas>
+          <pre id="m-readout">roll — · pitch — · yaw —</pre>
+          <div class="probe-btns">
+            <button id="m-centre" type="button">Centre here</button>
+          </div>
+          <p id="m-note" class="hint">Stand the car level, facing away from you, then centre. Yaw is relative and drifts.</p>
+        </div>
+        <div class="panel">
+          <h2 class="lights-head">Steering</h2>
+          <svg id="m-dial" viewBox="0 0 100 56" aria-hidden="true" focusable="false">
+            <path d="M6 50 A44 44 0 0 1 94 50" fill="none" stroke="currentColor"
+                  stroke-width="2" opacity="0.3" />
+            <line id="m-needle" x1="50" y1="50" x2="50" y2="10" stroke="currentColor"
+                  stroke-width="3" />
+          </svg>
+          <pre id="m-deg">—</pre>
+          <p class="hint">Motor shaft angle, not the road-wheel angle.</p>
+        </div>
+      </section>
+
+      <section class="tabpanel" data-tab="macros" aria-label="Macros" hidden>
+        <div class="panel" id="macro-editor">
+          <h2 class="lights-head">Macros</h2>
+          <div class="macro-slot-row">
+            <select id="macro-select" aria-label="Macro slot"></select>
+            <button id="macro-new" type="button">New</button>
+            <button id="macro-delete" type="button">Delete</button>
+          </div>
+          <textarea id="macro-source" spellcheck="false" rows="12"
+            aria-label="Macro source" placeholder="await drive(40, 0);
+await wait(500);
+await stopDrive();"></textarea>
+          <div class="macro-bar">
+            <button id="macro-run" type="button" disabled>Run</button>
+            <button id="macro-stop" type="button" disabled>Stop</button>
+            <label><input id="macro-unsafe" type="checkbox" /> unsafe</label>
+            <output id="macro-elapsed">0.0s</output>
+          </div>
+          <pre id="macro-status">idle</pre>
+        </div>
+        <div class="panel" id="macro-help">
+          <h2 class="lights-head">Methods</h2>
+          <div class="macro-examples" id="macro-examples"></div>
+          <input id="macro-search" type="search" placeholder="search methods"
+            aria-label="Search macro methods" autocomplete="off" spellcheck="false" />
+          <div class="macro-method-list" id="macro-method-list"></div>
+          <p class="macro-hidden" id="macro-hidden" role="status"></p>
+        </div>
+        <div class="panel">
+          <h2 class="lights-head">Import / export</h2>
+          <div class="probe-btns">
+            <button id="macro-export" type="button">Export</button>
+            <button id="macro-import" type="button">Import</button>
+          </div>
+          <input id="macro-import-file" type="file" accept="application/json" hidden />
+        </div>
+      </section>
+
+      <section class="tabpanel" data-tab="debug" aria-label="Debug" hidden>
+        <section id="debug">
+          <div class="debug-bar">
+            <h2 class="lights-head">Debug log</h2>
+            <button id="log-copy" type="button">Copy</button>
+            <button id="log-clear" type="button">Clear</button>
+          </div>
+          <pre id="log"></pre>
+        </section>
+
+        <details id="probe-box">
+          <summary>Raw port probe — can drop the hub connection</summary>
+          <div id="probe">
+            <label>port 0x<input id="p-port" type="text" value="35" /></label>
+            <label>mode <input id="p-mode" type="number" inputmode="numeric" value="0" min="0" max="10" /></label>
+            <label>value <input id="p-val" type="number" inputmode="numeric" value="100" min="0" max="255" /></label>
+            <div class="probe-btns">
+              <button id="p-send" type="button">Send</button>
+              <button id="p-off" type="button">Send 0</button>
+            </div>
+            <div class="probe-btns">
+              <button id="p-modes" type="button">Sweep modes on port</button>
+            </div>
+            <label>multi-value (csv) <input id="p-csv" type="text" inputmode="numeric" value="100,0,0,0,0,0" /></label>
+            <button id="p-csv-send" type="button">Send CSV</button>
+          </div>
+        </details>
+
+        <details id="introspect-box">
+          <summary>Port introspection — read-only</summary>
+          <div id="introspect">
+            <label>port 0x<input id="i-port" type="text" value="3e" /></label>
+            <label>mode <input id="i-mode" type="number" inputmode="numeric" value="0" min="0" max="10" /></label>
+            <label>delta <input id="i-delta" type="number" inputmode="numeric" value="1" min="1" max="1000" /></label>
+            <div class="probe-btns">
+              <button id="i-describe" type="button">Describe port</button>
+              <button id="i-value" type="button">Read value once</button>
+            </div>
+            <div class="probe-btns">
+              <button id="i-watch" type="button">Watch mode</button>
+              <button id="i-unwatch" type="button">Stop watching</button>
+            </div>
+          </div>
+        </details>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="src/main.js"></script>
+
+  <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+  <script>
+    kofiWidgetOverlay.draw('olexandrchimera', {
+      'type': 'floating-chat',
+      'floating-chat.donateButton.text': 'Support me',
+      'floating-chat.donateButton.background-color': '#fcbf47',
+      'floating-chat.donateButton.text-color': '#323842'
+    });
+  </script>
+</body>
+</html>

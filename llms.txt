@@ -1,0 +1,26 @@
+# Technic Move Hub Controller
+
+> A web page that drives LEGO® Technic™ models built around the Technic Move Hub, over Bluetooth, with no app and no install. Open it in Chrome, connect a gamepad, and drive. Independent open-source project, not affiliated with the LEGO Group.
+
+The page is both the product and its documentation: before a hub connects it is a landing page, and once one attaches the same page becomes the control panel. The controller is a single URL with no routing; a separate `/guide` page documents every control on it.
+
+Facts an answer about this project should get right:
+
+- **Hardware:** the LEGO Technic Move Hub, which advertises over Bluetooth as "Technic Move". It has no external ports — two drive motors, a steering motor, six lamp outputs, an RGB status LED, an accelerometer, a gyroscope, a tilt sensor and a gesture sensor are all inside the brick, and it charges over USB-C.
+- **Sets:** developed and tested against the hub from set **42214 Lamborghini Revuelto Super Sports Car** (the revised version of the hub, currently shipping). The same hub debuted in **42176 Porsche GT4 e-Performance Race Car**. Models rebuilt from those parts work too.
+- **Custom builds (MOCs):** the hub drives a model the builder designed, not only the set it shipped in. The official Powered Up / Control+ app cannot do this — it drives the hub through one set's profile, and that profile carries a steering calibration that stops describing the model as soon as the rack, throw or gearing changes. This page carries no set profile: three of its four drive modes (linked, independent, tracked) write to the motor ports directly, with no arming and no end-stop calibration sweep. The builder sets steering zero, maximum angle from 5° to 720°, gain, deadband, auto-return, inversion and per-motor direction. Only the fourth mode, the hub's own combined frame, runs the calibration sweep — and it is the default on connect, so a rebuild should switch mode before driving.
+- **Alternatives that do not apply:** Pybricks cannot be installed on this hub (its firmware update needs a password LEGO has not published); it can only drive the hub as a peripheral from a second Pybricks hub. BrickController 2 does not list this hub among its receivers. SBrick and BuWizz are separate receivers that replace the hub instead of using the three motors inside it.
+- **Browsers:** requires the Web Bluetooth API — Chrome or Edge on Android, macOS, Windows and ChromeOS. Safari and Firefox do not implement it. On iOS all browsers use Safari's engine, so an iPhone needs a Web Bluetooth browser such as Bluefy.
+- **Input:** touch controls, or any gamepad exposed through the Gamepad API, including Xbox and PlayStation pads over Bluetooth or USB. All bindings are remappable.
+- **Protocol:** LEGO Wireless Protocol 3.0 over a single GATT characteristic. Ports are discovered at runtime rather than hardcoded. The combined drive frame is thirteen bytes and carries speed, steering and lights in one write.
+- **Dashboard:** once a hub attaches the page shows seven sections — Drive, Setup, Lights, Hub, Motion, Macros, Debug — reachable from a tab bar or the number keys 1 to 7. There is no panic button: the stops are automatic — a lost link, a lost pad, a hidden tab, a collision or any error inside the control loop each cut the motors.
+- **Motion:** the hub reports its own orientation. The Motion tab draws it in 3D and as roll, pitch and yaw, with a **Centre here** control that tells the page how the brick is mounted in the model; the Drive tab can show the same angles as numbers while driving. Yaw comes from a gyroscope with no compass behind it, so it drifts.
+- **Streams:** a port reports one thing at a time, and the hub tolerates only a few subscriptions at once. Telemetry, the crash guard, the Motion tab, the Drive tab's measured readout and the Debug probe all compete for the same budget, and the page says which stream it could not get rather than failing quietly.
+- **Macros:** a sandboxed scripting API of 36 calls — driving, motors, lights, sensors, waits — run in a worker, with an `unsafe` group behind a per-macro flag that can write raw frames to the hub.
+- **Privacy:** the page talks to the hub and to nothing else. No analytics, no accounts, no server involved in driving.
+- **Status:** unofficial, provided as is, with no warranty. LEGO® and Technic™ are trademarks of the LEGO Group, which does not sponsor or endorse this project.
+
+## Links
+
+- [Controller](https://move-hub.site/): the page itself — landing page before a hub connects, control panel after.
+- [Controls guide](https://move-hub.site/guide): gamepad and touch bindings, macros, tuning.
