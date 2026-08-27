@@ -59,79 +59,99 @@ export class LegoProtocol extends EventTarget {
     transport.addEventListener('data', (e) => this.#onData(e.detail));
   }
 
+  // Every inbound frame is a switch on its message type (byte 2). The trial
+  // chain this replaced re-parsed the frame once per candidate — up to eight
+  // parseMessage+slice allocations for a single streaming 0x45 sample.
+  // See docs/DESIGN-NOTES.md § Inbound frames dispatch on the type byte, not a parse chain
   #onData(bytes) {
     log('recv', bytes);
-    const prop = parseHubProperty(bytes);
-    if (prop) {
-      if (prop.property === 0x06) {
-        this.dispatchEvent(new CustomEvent('battery', { detail: { percent: prop.payload[0] } }));
+    if (!bytes || bytes.length < 3) return;
+    switch (bytes[2]) {
+      case 0x01: {
+        const prop = parseHubProperty(bytes);
+        if (prop?.property === 0x06) {
+          this.dispatchEvent(new CustomEvent('battery', { detail: { percent: prop.payload[0] } }));
+        }
+        return;
       }
-      return;
-    }
-    // Port Output Command Feedback (0x82) and Generic Error (0x05): the hub's
-    // two possible answers to a write. Silence is the caller's to detect.
-    // See docs/DESIGN-NOTES.md § Both the write acknowledgement and the error have to be surfaced
-    if (bytes[2] === 0x82) {
-      for (let i = 3; i + 1 < bytes.length; i += 2) {
-        this.dispatchEvent(new CustomEvent('port-feedback',
-          { detail: { port: bytes[i], status: bytes[i + 1] } }));
+      // Port Output Command Feedback (0x82) and Generic Error (0x05): the hub's
+      // two possible answers to a write. Silence is the caller's to detect.
+      // See docs/DESIGN-NOTES.md § Both the write acknowledgement and the error have to be surfaced
+      case 0x82:
+        for (let i = 3; i + 1 < bytes.length; i += 2) {
+          this.dispatchEvent(new CustomEvent('port-feedback',
+            { detail: { port: bytes[i], status: bytes[i + 1] } }));
+        }
+        return;
+      case 0x05:
+        this.dispatchEvent(new CustomEvent('protocol-error',
+          { detail: { command: bytes[3], code: bytes[4] } }));
+        return;
+      // Hub Alerts (0x03). Deliberately log-and-report only: these have never
+      // been observed on this hub, so nothing acts on them yet.
+      // See docs/superpowers/specs/2026-07-28-macro-system-design.md § Layer 2
+      case 0x03: {
+        const alert = parseHubAlert(bytes);
+        if (alert) {
+          log('HUB ALERT', alert.name ?? '0x' + alert.alert.toString(16),
+            alert.active ? 'ACTIVE' : 'cleared');
+          this.dispatchEvent(new CustomEvent('hub-alert', { detail: alert }));
+        }
+        return;
       }
-      return;
-    }
-    if (bytes[2] === 0x05) {
-      this.dispatchEvent(new CustomEvent('protocol-error',
-        { detail: { command: bytes[3], code: bytes[4] } }));
-      return;
-    }
-    // Hub Alerts (0x03). Deliberately log-and-report only: these have never
-    // been observed on this hub, so nothing acts on them yet.
-    // See docs/superpowers/specs/2026-07-28-macro-system-design.md § Layer 2
-    const alert = parseHubAlert(bytes);
-    if (alert) {
-      log('HUB ALERT', alert.name ?? '0x' + alert.alert.toString(16),
-        alert.active ? 'ACTIVE' : 'cleared');
-      this.dispatchEvent(new CustomEvent('hub-alert', { detail: alert }));
-      return;
-    }
-    // Answers to the introspection queries (0x21 / 0x22), dispatched raw.
-    const pi = parsePortInformation(bytes);
-    if (pi) { this.dispatchEvent(new CustomEvent('port-information', { detail: pi })); return; }
-    const pmi = parsePortModeInformation(bytes);
-    if (pmi) { this.dispatchEvent(new CustomEvent('port-mode-information', { detail: pmi })); return; }
-    const io = parseHubAttachedIO(bytes);
-    if (io) { this.#onAttachedIO(io); return; }
-    const pv = parsePortValueSingle(bytes);
-    if (pv && pv.port === this._accelPort) {
-      const v = parseVector16(bytes);
-      // Marked only when this process asked for it, so a delivered sample keeps
-      // exactly the shape every other consumer already sees.
-      // See docs/DESIGN-NOTES.md § A polled vector must not enter the guard's sample chain
-      const polled = this.#claimReply(pv.port);
-      if (v) this.dispatchEvent(new CustomEvent('accel', { detail: polled ? { ...v, polled: true } : v }));
-      return;
-    }
-    if (pv) {
-      if (this._speedPorts.has(pv.port)) {
-        this.dispatchEvent(new CustomEvent('speed', { detail: { port: pv.port, speed: pv.values[0] ?? 0 } }));
+      // Answers to the introspection queries (0x21 / 0x22), dispatched raw.
+      case 0x43: {
+        const pi = parsePortInformation(bytes);
+        if (pi) this.dispatchEvent(new CustomEvent('port-information', { detail: pi }));
+        return;
       }
-      if (this._posPorts.has(pv.port)) {
-        this.dispatchEvent(new CustomEvent('position',
-          { detail: { port: pv.port, pos: parseInt32LE(bytes, 4) } }));
+      case 0x44: {
+        const pmi = parsePortModeInformation(bytes);
+        if (pmi) this.dispatchEvent(new CustomEvent('port-mode-information', { detail: pmi }));
+        return;
       }
-      if (pv.port === this.imuPort) {
-        // See docs/DESIGN-NOTES.md § The tilt sensor reports words, not bytes
-        const w = parseWords16(bytes, 3);
-        const [x = 0, y = 0, z = 0] = w ?? pv.values;
-        this.dispatchEvent(new CustomEvent('tilt', { detail: { x, y, z } }));
-        this.dispatchEvent(new CustomEvent('imu-raw', { detail: { values: pv.values } }));
+      case 0x04: {
+        const io = parseHubAttachedIO(bytes);
+        if (io) this.#onAttachedIO(io);
+        return;
       }
-      if (pv.port === this._orintPort) {
-        const w = parseWords16(bytes, 4);
-        if (w) this.dispatchEvent(new CustomEvent('orientation', { detail: { values: w } }));
+      case 0x45: {
+        const pv = parsePortValueSingle(bytes);
+        if (!pv) return;
+        if (pv.port === this._accelPort) {
+          const v = parseVector16(bytes);
+          // Marked only when this process asked for it, so a delivered sample keeps
+          // exactly the shape every other consumer already sees.
+          // See docs/DESIGN-NOTES.md § A polled vector must not enter the guard's sample chain
+          const polled = this.#claimReply(pv.port);
+          if (v) this.dispatchEvent(new CustomEvent('accel', { detail: polled ? { ...v, polled: true } : v }));
+          return;
+        }
+        if (this._speedPorts.has(pv.port)) {
+          this.dispatchEvent(new CustomEvent('speed', { detail: { port: pv.port, speed: pv.values[0] ?? 0 } }));
+        }
+        if (this._posPorts.has(pv.port)) {
+          this.dispatchEvent(new CustomEvent('position',
+            { detail: { port: pv.port, pos: parseInt32LE(bytes, 4) } }));
+        }
+        if (pv.port === this.imuPort) {
+          // See docs/DESIGN-NOTES.md § The tilt sensor reports words, not bytes
+          const w = parseWords16(bytes, 3);
+          const [x = 0, y = 0, z = 0] = w ?? pv.values;
+          this.dispatchEvent(new CustomEvent('tilt', { detail: { x, y, z } }));
+          this.dispatchEvent(new CustomEvent('imu-raw', { detail: { values: pv.values } }));
+        }
+        if (pv.port === this._orintPort) {
+          const w = parseWords16(bytes, 4);
+          if (w) this.dispatchEvent(new CustomEvent('orientation', { detail: { values: w } }));
+        }
+        // Untyped passthrough, so a probe can watch a port nothing else models.
+        this.dispatchEvent(new CustomEvent('port-value',
+          { detail: { port: pv.port, values: pv.values } }));
+        return;
       }
-      // Untyped passthrough, so a probe can watch a port nothing else models.
-      this.dispatchEvent(new CustomEvent('port-value',
-        { detail: { port: pv.port, values: pv.values } }));
+      default:
+        return;
     }
   }
 
