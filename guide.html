@@ -74,6 +74,10 @@
             <li><a href="#g-accel">accel</a></li>
             <li><a href="#g-accel-rate">accel rate</a></li>
             <li><a href="#g-button-mapping-fold-out">Button mapping (fold-out)</a></li>
+            <li><a href="#g-haptics-vibration-feedback">Haptics → vibration feedback</a></li>
+            <li><a href="#g-hits">hits</a></li>
+            <li><a href="#g-bed">bed</a></li>
+            <li><a href="#g-test-rumble">Test rumble</a></li>
           </ul>
         </li>
         <li class="toc__g">
@@ -407,6 +411,29 @@
 <p class="lead lead--watch-out"><span class="lead__k">Watch out</span>In Tracked mode the steer motor deliberately sits on the <em>right</em> stick, because the left one is already counter-rotating the tracks. Sharing one stick between both used to drive the steer motor into its end stop and stall it there.</p>
 <p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Set steering zero is the one binding that needs a deliberate one-second hold, because changing calibration mid-drive is destructive.</p>
 <p>The trim buttons nudge the steering centre by two units per press, and the trim is only applied while you are actually steering — held at rest it would leave a permanent trickle of power on the motor, which makes it buzz instead of turn.</p>
+</section>
+<section class="ctrl" data-t="haptics → vibration feedback what it does. turns the gamepad's rumble motors on. off until you switch it on, and it stays off until you do. two motors, two jobs. the light one carries a continuous bed that follows how fast you are going, how hard you just changed the throttle and how much you are asking of the steering. the heavy one stays silent until something happens — a collision, the crash guard cutting the motors, a brake landing — and then hits once and decays. the bed drops to nothing for the length of a hit, because a knock arriving on top of a running bed reads as a swell rather than a knock. when you'd use it. driving out of arm's reach, where the car is small in your view and you cannot hear it. the bed tells you the car is moving when you cannot see the wheels turn, and the hits tell you it hit something before you work out why it stopped. watch out. chrome, edge and safari 16.4 or newer can vibrate a pad. firefox cannot — it has no gamepad vibration at all, and the panel says unsupported rather than pretending. nothing else about the page changes there.">
+<h3 id="g-haptics-vibration-feedback">Haptics → vibration feedback</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Turns the gamepad's rumble motors on. Off until you switch it on, and it stays off until you do.</p>
+<p>Two motors, two jobs. The light one carries a continuous bed that follows how fast you are going, how hard you just changed the throttle and how much you are asking of the steering. The heavy one stays silent until something happens — a collision, the crash guard cutting the motors, a brake landing — and then hits once and decays. The bed drops to nothing for the length of a hit, because a knock arriving on top of a running bed reads as a swell rather than a knock.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Driving out of arm's reach, where the car is small in your view and you cannot hear it. The bed tells you the car is moving when you cannot see the wheels turn, and the hits tell you it hit something before you work out why it stopped.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>Chrome, Edge and Safari 16.4 or newer can vibrate a pad. Firefox cannot — it has no gamepad vibration at all, and the panel says <code>unsupported</code> rather than pretending. Nothing else about the page changes there.</p>
+</section>
+<section class="ctrl" data-t="hits what it does. how hard collisions and brakes hit. slider from 0 to 100, starting at 70. when you'd use it. lower it if the pad jumps in your hands on every kerb. at 0 you feel only the bed.">
+<h3 id="g-hits">hits</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>How hard collisions and brakes hit. Slider from 0 to 100, starting at 70.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Lower it if the pad jumps in your hands on every kerb. At 0 you feel only the bed.</p>
+</section>
+<section class="ctrl" data-t="bed what it does. how strong the continuous ride feel is. slider from 0 to 100, starting at 50. when you'd use it. set it to 0 for alerts only — the pad then stays quiet until something actually happens, which is easier to live with over a long session. constant vibration dulls the hand within a couple of minutes, and takes a minute or two of quiet to recover.">
+<h3 id="g-bed">bed</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>How strong the continuous ride feel is. Slider from 0 to 100, starting at 50.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>Set it to 0 for alerts only — the pad then stays quiet until something actually happens, which is easier to live with over a long session. Constant vibration dulls the hand within a couple of minutes, and takes a minute or two of quiet to recover.</p>
+</section>
+<section class="ctrl" data-t="test rumble what it does. fires one bed pulse then one hit, and updates the status line underneath. when you'd use it. to tell a pad that has no rumble motor apart from a feature that is simply switched off. the page cannot know which it is until it tries, so this button is the answer. a pad has to be connected — the button reports unsupported when nothing is attached. watch out. there is no vibration for bumps or road texture, and there will not be. the accelerometer inside the hub only speaks when the reading jumps past a threshold, and ordinary driving already shakes it harder than a surface change does. turning the threshold low enough to see texture drops the bluetooth link within seconds.">
+<h3 id="g-test-rumble">Test rumble</h3>
+<p class="lead lead--what-it-does"><span class="lead__k">What it does</span>Fires one bed pulse then one hit, and updates the status line underneath.</p>
+<p class="lead lead--when-you-d-use-it"><span class="lead__k">When you'd use it</span>To tell a pad that has no rumble motor apart from a feature that is simply switched off. The page cannot know which it is until it tries, so this button is the answer. A pad has to be connected — the button reports <code>unsupported</code> when nothing is attached.</p>
+<p class="lead lead--watch-out"><span class="lead__k">Watch out</span>There is no vibration for bumps or road texture, and there will not be. The accelerometer inside the hub only speaks when the reading jumps past a threshold, and ordinary driving already shakes it harder than a surface change does. Turning the threshold low enough to see texture drops the Bluetooth link within seconds.</p>
 </section>
 </section>
 <section class="group"><h2 id="g-lights-tab">Lights tab</h2>

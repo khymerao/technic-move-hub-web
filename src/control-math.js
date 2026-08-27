@@ -11,6 +11,10 @@ export function expCurve(value, exponent = 2) {
   return Math.sign(value) * Math.pow(Math.abs(value), exponent);
 }
 
+export function clampUnit(value) {
+  return Number.isFinite(value) ? (value > 0 ? (value < 1 ? value : 1) : 0) : 0;
+}
+
 export function axisToSpeed(axis) {
   return Math.round(expCurve(applyDeadzone(axis)) * 100);
 }

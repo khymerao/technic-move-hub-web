@@ -37,6 +37,7 @@ const snapshot = (pad) => pad
 
 export class GamepadController extends EventTarget {
   #protocol; #roles; #steering; #playvm;
+  #haptics = null;
   #raf = 0; #prev = null; #map;
   #ledIdx = 0;
   #lamps = [false, false, false, false, false, false];
@@ -119,6 +120,9 @@ export class GamepadController extends EventTarget {
     this.#mix = createInputMix({ deadzone: () => this.params.deadzone });
     this.#map = loadMap();
   }
+
+  get haptics() { return this.#haptics; }
+  set haptics(driver) { this.#haptics = driver ?? null; }
 
   get map() { return this.#map; }
   set map(m) { this.#map = m; saveMap(m); }
@@ -297,6 +301,12 @@ export class GamepadController extends EventTarget {
   #stopAll() {
     // See docs/DESIGN-NOTES.md § The emergency stop closes the sources before it cuts power
     this.#mix.releaseAll();
+    try {
+      this.#haptics?.silence();
+    } catch (err) {
+      log('haptics fault - disabling:', err.message);
+      this.#haptics = null;
+    }
     this.#ramped.clear();
     this.#lastLinked = null;
     // The dead-man watchdog is a timer, and a stop/disarm/disconnect/crash all
@@ -629,6 +639,32 @@ export class GamepadController extends EventTarget {
         this.#steering.setInput(steerRaw * 100 + this.params.trim);
         if (Math.abs(steerRaw) < 0.01) this.#steering.release();
         sent.steer = Math.round(steerRaw * 100 + this.params.trim);
+      }
+    }
+
+    // Everything below runs AFTER the frame's motor command is on the link.
+    // None of it needs to happen before the motor byte goes out, so none of it
+    // should. Still above the snapshot, so edge detection is untouched.
+    // See docs/DESIGN-NOTES.md § The frame commands the motor before it does anything else
+    // The rumble bed, fed the same deadzoned stick the motor path sees. A
+    // haptics fault disables it rather than tearing the loop down.
+    if (this.#haptics) {
+      try {
+        const dz = this.params.deadzone;
+        const drive = Math.max(
+          Math.abs(applyDeadzone(ax.throttle, dz)),
+          Math.abs(applyDeadzone(ax.throttleB, dz)),
+          Math.abs(applyDeadzone(ax.tankThrottle, dz)),
+        );
+        const turn = Math.max(
+          Math.abs(applyDeadzone(ax.steer, dz)),
+          Math.abs(applyDeadzone(ax.tankTurn, dz)),
+        );
+        this.#haptics.drive({ drive, turn, dtMs });
+        this.#haptics.tick(pad, now);
+      } catch (err) {
+        log('haptics fault - disabling:', err.message);
+        this.#haptics = null;
       }
     }
 

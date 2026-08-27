@@ -15,12 +15,15 @@ export function createBrakePolicy({
   brakeStageMs = 400,     // the coast window before the brake lands
   // See docs/DESIGN-NOTES.md § The staging threshold is far lower than it looks like it should be
   brakeDirectMax = 10,
+  onBrake = () => {},
 } = {}) {
   const lastSpeed = new Map();  // key -> last commanded speed
   const peak = new Map();       // key -> {speed, at}, recent peak
   const stages = new Map();     // key -> the pending stage it takes part in
 
   const asKeys = (keys) => (Array.isArray(keys) ? keys : [keys]);
+
+  const announce = (info) => { try { onBrake(info); } catch { /* ignore */ } };
 
   const forget = (stage) => {
     for (const key of stage.keys) if (stages.get(key) === stage) stages.delete(key);
@@ -84,12 +87,13 @@ export function createBrakePolicy({
       if (list.some((key) => stages.has(key))) return undefined;
       const staged = list.some((key) => needsStagedBrake(reference(key), brakeDirectMax));
       note(list, 0);
-      if (!staged) return brake();
+      if (!staged) { announce({ keys: list, staged: false }); return brake(); }
       const stage = { keys: list, timer: null, waiters: [] };
       stage.timer = setTimer(() => {
         forget(stage);
         try {
           const written = brake();
+          announce({ keys: stage.keys, staged: true });
           release(stage, written);
           return written;
         } catch (err) {

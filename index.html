@@ -51,6 +51,7 @@
           "Six-lamp array and status LED control",
           "Battery, tilt and accelerometer telemetry",
           "Collision detection",
+          "Gamepad haptics: a ride-feel rumble bed plus hits on impact and braking",
           "Raw LWP 3.0 protocol log"
         ]
       },
@@ -381,6 +382,11 @@
                 uses Safari's engine, so an iPhone needs one such as Bluefy.</td></tr>
               <tr><th>Controller</th><td>Optional. Any pad the browser can see —
                 Xbox, PlayStation, Bluetooth or USB. Fully remappable.</td></tr>
+              <tr><th>Rumble</th><td>If the pad has motors, it can carry the drive:
+                a bed that rises with speed and steering load, and a single hit when
+                the car strikes something or the crash guard cuts the motors. Off
+                until you switch it on, in Setup. Chrome, Edge and Safari 16.4+;
+                Firefox cannot vibrate a pad at all.</td></tr>
               <tr><th>Setup</th><td>None. No pairing in system settings, no app, no account.</td></tr>
             </tbody>
           </table>
@@ -593,6 +599,15 @@
             <div id="gp-map"></div>
             <button id="gp-reset" type="button">Reset to defaults</button>
           </details>
+        </div>
+        <div class="panel">
+          <h2 class="lights-head">Haptics</h2>
+          <p class="hint">Rumble from the car: a bed that follows speed and steering, hits on impact and braking. Chrome and Edge only; Firefox has no gamepad vibration at all.</p>
+          <label><input id="hap-on" type="checkbox" /> vibration feedback</label>
+          <label>hits <input id="hap-strong" type="range" min="0" max="100" step="5" value="70" /><output id="hap-strong-out">70</output></label>
+          <label>bed <input id="hap-weak" type="range" min="0" max="100" step="5" value="50" /><output id="hap-weak-out">50</output></label>
+          <button id="hap-test" type="button">Test rumble</button>
+          <pre id="hap-status">haptics: off</pre>
         </div>
       </section>
 

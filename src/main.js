@@ -13,6 +13,9 @@ import { $ } from './ui/dom.js';
 import { blurShouldStop } from './focus-guard.js';
 import { initTabs } from './ui/tabs.js';
 import { createCollisionGuard } from './collision.js';
+import { createHapticsMix } from './haptics-mix.js';
+import { createHapticsDriver } from './haptics-driver.js';
+import { initHapticsPanel } from './ui/haptics.js';
 import { initMotorPanel } from './ui/motors.js';
 import { initSteeringPanel } from './ui/steering.js';
 import { initLampPanel } from './ui/lamps.js';
@@ -52,10 +55,11 @@ log('build', BUILD);
 // The live connection. Panels read it at event time because it only exists
 // between connect and disconnect.
 // See docs/DESIGN-NOTES.md § Panels read the hub at event time
-const hub = { transport: null, protocol: null, steering: null, gamepad: null };
+const hub = { transport: null, protocol: null, steering: null, gamepad: null, haptics: null };
 
 const motors = initMotorPanel(hub);
 const collisionPanel = initCollisionPanel(hub);
+const hapticsPanel = initHapticsPanel(hub);
 const steerPanel = initSteeringPanel(hub);
 const lamps = initLampPanel(hub);
 const telemetry = initTelemetryPanel(hub);
@@ -142,10 +146,19 @@ async function onConnect() {
   if (connectInFlight || hub.transport?.connected) return;
   connectInFlight = true;
   const transport = new LegoBLETransport();
-  const protocol = new LegoProtocol(transport);
+  const protocol = new LegoProtocol(transport, {
+    onBrake: () => hub.haptics?.hit('brake', 0.6),
+  });
   hub.transport = transport;
   hub.protocol = protocol;
   hub.collision = createCollisionGuard(protocol);
+  const hapticsMix = createHapticsMix();
+  hub.haptics = createHapticsDriver({
+    mix: hapticsMix,
+    onStatus: (state) => hapticsPanel.showStatus(state),
+  });
+  hub.haptics.attach(window);
+  hapticsPanel.attach();
   // The guard cuts nothing itself. This is the only stop that closes the
   // sources first — without it the combined frame is re-sent on the next
   // heartbeat and the car drives off after the crash.
@@ -155,11 +168,13 @@ async function onConnect() {
   // waiting on it; every other mode ends the run.
   // See docs/DESIGN-NOTES.md § collision('stop') cuts the motion without ending the run
   hub.collision.addEventListener('cut', (e) => {
+    hub.haptics?.hit('cut', 1);
     if (e.detail?.mode === 'stop') motionStop();
     else emergencyStop('collision');
   });
   hub.collision.addEventListener('impact', (e) => {
     setStatus(`collision detected (${e.detail.magnitude}mG)`, 'warn');
+    hub.haptics?.hit('impact', Math.min(1, e.detail.magnitude / 3500));
     if (e.detail.mode === 'abort') hub.macro?.abort('collision');
   });
 
@@ -174,6 +189,10 @@ async function onConnect() {
     hub.playvm = null;
     hub.gamepad = null;
     hub.collision = null;
+    hub.haptics?.silence();
+    hub.haptics?.detach();
+    hub.haptics = null;
+    hapticsPanel.reset();
     collisionPanel.reset();
     motion.reset();
     drivePanel.reset({ linkLost: true });
@@ -230,6 +249,7 @@ async function onConnect() {
     hub.playvm = new PlayVmController(protocol);
     hub.gamepad = new GamepadController(protocol, protocol.roles, hub.steering,
       motors.shouldBrake, hub.playvm);
+    hub.gamepad.haptics = hub.haptics;
     // Fires on touch, not on release — an absent or centred pad emits nothing.
     hub.gamepad.addEventListener('input', () => hub.macro?.abort('gamepad'));
     // A crash mid-watch leaves no way to detect a further touch; end the run

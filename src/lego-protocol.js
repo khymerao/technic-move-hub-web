@@ -50,12 +50,15 @@ export class LegoProtocol extends EventTarget {
   // now/setTimer/clearTimer are optional and default to the real clock, so
   // every existing caller (`new LegoProtocol(transport)`) is unaffected.
   // See docs/DESIGN-NOTES.md § The brake policy's clock is now a seam, not a wall
-  constructor(transport, { now = () => Date.now(), setTimer = setTimeout, clearTimer = clearTimeout } = {}) {
+  constructor(transport, {
+    now = () => Date.now(), setTimer = setTimeout, clearTimer = clearTimeout,
+    onBrake = () => {},
+  } = {}) {
     super();
     this.#transport = transport;
     this.#setTimer = setTimer;
     this.#clearTimer = clearTimer;
-    this.#brake = createBrakePolicy({ now, setTimer, clearTimer });
+    this.#brake = createBrakePolicy({ now, setTimer, clearTimer, onBrake });
     transport.addEventListener('data', (e) => this.#onData(e.detail));
   }
 
