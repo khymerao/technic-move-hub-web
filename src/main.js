@@ -167,10 +167,13 @@ async function onConnect() {
   // motion is cut and the run lives on, so the impact below can reach a macro
   // waiting on it; every other mode ends the run.
   // See docs/DESIGN-NOTES.md § collision('stop') cuts the motion without ending the run
+  // A collision cuts the motors but leaves the loop armed — the driver keeps
+  // control without re-arming. Non-'stop' modes still end a macro run.
+  // See docs/DESIGN-NOTES.md § A collision cuts the motors but keeps the loop armed
   hub.collision.addEventListener('cut', (e) => {
     hub.haptics?.hit('cut', 1);
-    if (e.detail?.mode === 'stop') motionStop();
-    else emergencyStop('collision');
+    if (e.detail?.mode !== 'stop') hub.macro?.abort('collision');
+    motionStop();
   });
   hub.collision.addEventListener('impact', (e) => {
     setStatus(`collision detected (${e.detail.magnitude}mG)`, 'warn');
@@ -309,11 +312,12 @@ async function keepAwake(on) {
   } catch { /* not fatal */ }
 }
 
-// Every way of losing control funnels into the one stop; coming back never
-// silently re-arms.
+// Losing focus cuts the motors but leaves the loop armed: the poll guard stops
+// it commanding off a frozen pad, and driving resumes on return without a
+// re-arm. See docs/DESIGN-NOTES.md § Focus loss stops the motors but keeps the loop armed
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    emergencyStop();
+    motionStop();
     // Both measuring panels are stood down the same way, so both are stood back
     // up the same way. Drive used to be stood down by `reset()` clearing its
     // measured flag, which nothing ever set again.
@@ -327,12 +331,12 @@ document.addEventListener('visibilitychange', () => {
 
 // visibilitychange never fires for a blur that keeps the tab visible — devtools
 // taking focus, a window on a second monitor, a notification. The pad's reading
-// freezes there just as it does when hidden, so blur estops too, and coming back
-// requires an explicit re-arm exactly like the hidden path.
-// See docs/DESIGN-NOTES.md § Blur is the focus loss visibilitychange never reports
+// freezes there just as it does when hidden, so blur cuts the motors too — but
+// leaves the loop armed, so returning resumes driving without a re-arm.
+// See docs/DESIGN-NOTES.md § Focus loss stops the motors but keeps the loop armed
 window.addEventListener('blur', () => {
   if (!blurShouldStop({ running: hub.gamepad?.running, hasFocus: document.hasFocus?.bind(document) })) return;
-  emergencyStop();
+  motionStop();
   motion.setActive(false);
   drivePanel.setActive(false);
 });
