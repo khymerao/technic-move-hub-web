@@ -8,6 +8,12 @@ import { rampStep, DEFAULT_RATE, DEFAULT_TAU } from './ramp.js';
 import { DEFAULT_MAP, ACTIONS, HOLD_ACTIONS, resolveActions, learnBinding, sourceLabel, tankMix } from './gamepad-map.js';
 import { log } from './debug-log.js';
 
+// How long a per-motor drive command may go unrefreshed before the watchdog
+// brakes it, and how often that watchdog wakes to check.
+// See docs/DESIGN-NOTES.md § The per-motor drive paths need their own dead-man
+export const PERMOTOR_TTL_MS = 1000;
+export const PERMOTOR_WATCHDOG_MS = 500;
+
 const MAP_KEY = 'lego-gamepad-map-v2';
 const LED_CYCLE = [1, 3, 6, 7, 9, 10];
 
@@ -46,6 +52,15 @@ export class GamepadController extends EventTarget {
   #lastPadTs = 0; #staleSince = 0; #stoppedStale = false; #warnedMapping = false;
   #mix;
   #watching = false; #watchOwnsLoop = false; #lastArmed = false; #lastRunning = false;
+  // Was the tab live (focused and visible) on the last frame? The !live→live
+  // edge reseeds the frame so a return from unfocused does not ramp on a stale
+  // multi-second dt. See docs/DESIGN-NOTES.md § Coming back from unfocused starts a fresh frame, not a stale one
+  #wasLive = true;
+  // Per-motor dead-man: injected time/timer, the TTL/interval, and the state a
+  // self-rescheduling watchdog reads. See docs/DESIGN-NOTES.md § The per-motor drive paths need their own dead-man
+  #now; #schedule; #cancelTimer;
+  #permotorTtlMs; #watchdogMs;
+  #lastDriveAt = -Infinity; #driveActive = false; #driveWatch = 0;
 
   params = {
     deadzone: 0.15,
@@ -83,13 +98,22 @@ export class GamepadController extends EventTarget {
 
   // shouldBrake(port) lets the UI decide brake-vs-coast per motor. playvm is
   // optional: without it the combined-frame mode simply is not offered.
-  constructor(protocol, roles, steering, shouldBrake = () => true, playvm = null) {
+  constructor(protocol, roles, steering, shouldBrake = () => true, playvm = null, options = {}) {
     super();
     this.#protocol = protocol;
     this.#roles = roles;
     this.#steering = steering;
     this.#shouldBrake = shouldBrake;
     this.#playvm = playvm;
+    // Injectable so the dead-man can be exercised without real milliseconds,
+    // mirroring PlayVmController. Wrapped, never passed by reference.
+    this.#now = options.now ?? (() => performance.now());
+    // unref() so a lingering watchdog never holds a node test process open; in
+    // the browser the id is a number and the optional call is a no-op.
+    this.#schedule = options.schedule ?? ((fn, ms) => { const id = setTimeout(fn, ms); id?.unref?.(); return id; });
+    this.#cancelTimer = options.cancel ?? ((id) => clearTimeout(id));
+    this.#permotorTtlMs = options.permotorTtlMs ?? PERMOTOR_TTL_MS;
+    this.#watchdogMs = options.watchdogMs ?? PERMOTOR_WATCHDOG_MS;
     // Without a playvm collaborator the default mode can command nothing at all.
     if (!playvm) this.params.driveMode = 'linked';
     this.#mix = createInputMix({ deadzone: () => this.params.deadzone });
@@ -126,6 +150,10 @@ export class GamepadController extends EventTarget {
     this.#lastSent.clear();
     this.#lastLinked = null;
     this.#lastTank = null;
+    // Leaving a per-motor mode must strand no watchdog on that mode's command.
+    // See docs/DESIGN-NOTES.md § The per-motor drive paths need their own dead-man
+    this.#driveActive = false;
+    this.#clearDriveWatch();
     // Leaving a mode must not strand the motors at that mode's last command.
     this.#protocol.driveThrottle(0);
     // Tracked mode needs a mirrored drive motor to make sense; its closed loop
@@ -271,6 +299,11 @@ export class GamepadController extends EventTarget {
     this.#mix.releaseAll();
     this.#ramped.clear();
     this.#lastLinked = null;
+    // The dead-man watchdog is a timer, and a stop/disarm/disconnect/crash all
+    // route here — none may leave it armed.
+    // See docs/DESIGN-NOTES.md § The per-motor drive paths need their own dead-man
+    this.#driveActive = false;
+    this.#clearDriveWatch();
     // See docs/DESIGN-NOTES.md § A stop that only covers the per-motor path leaves the car driving
     this.#playvm?.stop();
     this.#protocol.driveThrottle(0);
@@ -299,6 +332,43 @@ export class GamepadController extends EventTarget {
     // Brake stops on the spot; float coasts. Chosen per motor by the UI.
     if (speed === 0 && this.#shouldBrake(port)) this.#protocol.brakeMotor(port);
     else this.#protocol.setMotorSpeedRaw(port, speed);
+  }
+
+  // Called once per frame with whether a per-motor drive path is commanding a
+  // non-zero speed. A live command renews the licence and keeps the watchdog
+  // armed; a zero (or a mode that hands the ports back — playvm/hold/brake)
+  // clears it. See docs/DESIGN-NOTES.md § The per-motor drive paths need their own dead-man
+  #noteDrive(active) {
+    if (active) {
+      this.#lastDriveAt = this.#now();
+      this.#driveActive = true;
+      this.#armDriveWatch();
+    } else if (this.#driveActive) {
+      this.#driveActive = false;
+      this.#clearDriveWatch();
+    }
+  }
+
+  #armDriveWatch() {
+    if (this.#driveWatch) return;            // one self-rescheduling timer
+    this.#driveWatch = this.#schedule(() => {
+      this.#driveWatch = 0;
+      if (!this.armed || !this.#driveActive) return;
+      if (this.#now() - this.#lastDriveAt > this.#permotorTtlMs) {
+        this.#driveActive = false;
+        // Reset every per-motor dedup, #lastSent included.
+        // See docs/DESIGN-NOTES.md § The per-motor drive paths need their own dead-man
+        this.#lastLinked = 0; this.#lastTank = null;
+        this.#ramped.clear(); this.#lastSent.clear();
+        this.#protocol.brakeDrive();
+        return;
+      }
+      this.#armDriveWatch();
+    }, this.#watchdogMs);
+  }
+
+  #clearDriveWatch() {
+    if (this.#driveWatch) { this.#cancelTimer(this.#driveWatch); this.#driveWatch = 0; }
   }
 
   // Rate-limit a commanded speed. Keyed so each output (drive pair, per-track,
@@ -335,6 +405,23 @@ export class GamepadController extends EventTarget {
         if (moved) this.dispatchEvent(new CustomEvent('input'));
       }
       return;
+    }
+    // An unfocused or hidden tab hands back a frozen navigator.getGamepads(), so
+    // driving from it commands the car off a stick reading that can no longer
+    // change. Suppress commanding while not live; default LIVE when hasFocus is
+    // absent (the node stubs), or every gamepad test crashes here.
+    // See docs/DESIGN-NOTES.md § The focus gate is the fresh-input signal the loop was missing
+    const live = (typeof document.hasFocus === 'function' ? document.hasFocus() : true)
+      && document.visibilityState !== 'hidden';
+    if (!live) { this.#wasLive = false; this.#prev = null; return; }
+    if (!this.#wasLive) {
+      // See docs/DESIGN-NOTES.md § Coming back from unfocused starts a fresh frame, not a stale one
+      this.#wasLive = true;
+      this.#lastFrameAt = 0;      // dtMs recomputes to the 16ms seed, no jump
+      this.#holdSince.clear();
+      // Seed from the live pad, not null: a button held across the blur must read
+      // as already-down, or #wasPressed() sees no history and the edge misfires.
+      this.#prev = pad ? snapshot(pad) : null;
     }
     const touching = this.#mix.anyEngaged();
     if (!pad && !touching) {
@@ -462,6 +549,7 @@ export class GamepadController extends EventTarget {
       if (this.params.driveMode === 'tracked') { sent.tankL = 0; sent.tankR = 0; }
       else if (this.params.driveMode === 'playvm') { sent.playvmSpeed = 0; sent.playvmSteer = 0; }
       else { sent.driveA = 0; sent.driveB = 0; }
+      this.#noteDrive(false);
     } else if (this.params.driveMode === 'playvm') {
       // One write carries both axes. No ramp and no minimum power: the hub runs
       // its own controller behind this frame and does its own smoothing.
@@ -476,6 +564,7 @@ export class GamepadController extends EventTarget {
         sent.playvmSpeed = throttle;
         sent.playvmSteer = steerCmd;
       }
+      this.#noteDrive(false);
     } else if (this.params.driveMode === 'tracked') {
       // One stick: Y drives, X counter-rotates. Both tracks in one burst.
       const turn = Math.round(this.#curve(ax.tankTurn) * this.params.maxSpeed);
@@ -493,6 +582,7 @@ export class GamepadController extends EventTarget {
         if (stopped && this.#shouldBrake(this.#roles.driveA)) this.#protocol.brakeDrive();
         else this.#protocol.driveTank(left, right);
       }
+      this.#noteDrive(!stopped);
     } else if (this.params.driveMode === 'linked') {
       // One burst drives both motors with the same value, back-to-back.
       const ramped = applyMinPower(this.#ramp('drive', throttle, dtMs), this.params.minPower);
@@ -503,6 +593,7 @@ export class GamepadController extends EventTarget {
         if (ramped === 0 && this.#shouldBrake(this.#roles.driveA)) this.#protocol.brakeDrive();
         else this.#protocol.driveThrottle(ramped);
       }
+      this.#noteDrive(ramped !== 0);
     } else {
       // Independent: motor A on the triggers, motor B on the right stick.
       const throttleB = Math.round(this.#curve(ax.throttleB) * this.params.maxSpeed);
@@ -510,6 +601,7 @@ export class GamepadController extends EventTarget {
       sent.driveB = applyMinPower(this.#ramp('b', throttleB, dtMs), this.params.minPower);
       this.#send(this.#roles.driveA, sent.driveA);
       this.#send(this.#roles.driveB, sent.driveB);
+      this.#noteDrive(sent.driveA !== 0 || sent.driveB !== 0);
     }
 
     // Steering. In raw mode the stick maps straight to motor power, so the

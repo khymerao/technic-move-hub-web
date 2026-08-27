@@ -10,6 +10,7 @@ import { GamepadController } from './gamepad-controller.js';
 import { PlayVmController } from './playvm-controller.js';
 import { createMacroHost } from './macro/host.js';
 import { $ } from './ui/dom.js';
+import { blurShouldStop } from './focus-guard.js';
 import { initTabs } from './ui/tabs.js';
 import { createCollisionGuard } from './collision.js';
 import { initMotorPanel } from './ui/motors.js';
@@ -302,6 +303,18 @@ document.addEventListener('visibilitychange', () => {
     motion.setActive(tabs.current() === 'motion');
     drivePanel.setActive(tabs.current() === 'drive');
   }
+});
+
+// visibilitychange never fires for a blur that keeps the tab visible — devtools
+// taking focus, a window on a second monitor, a notification. The pad's reading
+// freezes there just as it does when hidden, so blur estops too, and coming back
+// requires an explicit re-arm exactly like the hidden path.
+// See docs/DESIGN-NOTES.md § Blur is the focus loss visibilitychange never reports
+window.addEventListener('blur', () => {
+  if (!blurShouldStop({ running: hub.gamepad?.running, hasFocus: document.hasFocus?.bind(document) })) return;
+  emergencyStop();
+  motion.setActive(false);
+  drivePanel.setActive(false);
 });
 
 window.addEventListener('gamepadconnected', (e) => log('gamepad connected:', e.gamepad.id, 'mapping:', e.gamepad.mapping));
