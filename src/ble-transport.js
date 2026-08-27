@@ -24,13 +24,28 @@ export class LegoBLETransport extends EventTarget {
   });
   #dead = false;
   #connecting = false;
+  #onGattDisconnect = null;
+  #onCharValue = null;
 
   // At most one 'disconnected' per instance, and none while retrying.
   // See docs/DESIGN-NOTES.md § Disconnection is announced once, and never during a retry
   #notifyDisconnected(reason) {
     if (this.#dead || this.#connecting) return;
     this.#dead = true;
+    this.#releaseLink();
     this.dispatchEvent(new CustomEvent('disconnected', { detail: { reason } }));
+  }
+
+  // The browser retains the BluetoothDevice for the document's lifetime, so the
+  // device listener has to be removed by hand — otherwise it pins this whole
+  // transport, one graph per connect/disconnect cycle. Runs once, on the
+  // terminal disconnect the notify guard admits, never between retries.
+  // See docs/DESIGN-NOTES.md § The device listener has to be removed, or every reconnect leaks a graph
+  #releaseLink() {
+    this.#device?.removeEventListener?.('gattserverdisconnected', this.#onGattDisconnect);
+    this.#char?.removeEventListener?.('characteristicvaluechanged', this.#onCharValue);
+    this.#onGattDisconnect = null;
+    this.#onCharValue = null;
   }
 
   // Each attempt is bounded and retried rather than left to Chrome's own timeout.
@@ -47,10 +62,11 @@ export class LegoBLETransport extends EventTarget {
       filters: [{ services: [SERVICE_UUID] }],
     });
     log('connect: device picked:', this.#device.name || this.#device.id);
-    this.#device.addEventListener('gattserverdisconnected', () => {
+    this.#onGattDisconnect = () => {
       log('EVENT gattserverdisconnected (signal lost)');
       this.#notifyDisconnected('signal lost');
-    });
+    };
+    this.#device.addEventListener('gattserverdisconnected', this.#onGattDisconnect);
 
     let lastErr;
     this.#connecting = true;
@@ -66,6 +82,7 @@ export class LegoBLETransport extends EventTarget {
       } catch (err) {
         lastErr = err;
         log(`connect: attempt ${attempt} failed —`, err.message);
+        this.#char?.removeEventListener?.('characteristicvaluechanged', this.#onCharValue);
         this.#char = null;
         try { this.#device.gatt.disconnect(); } catch { /* ignore */ }
         // Give the hub a moment to tear the stale link down before retrying.
@@ -86,10 +103,11 @@ export class LegoBLETransport extends EventTarget {
     log('connect: getCharacteristic…');
     this.#char = await service.getCharacteristic(CHAR_UUID);
     log('connect: startNotifications…');
-    this.#char.addEventListener('characteristicvaluechanged', (e) => {
+    this.#onCharValue = (e) => {
       const dv = e.target.value;
       this.dispatchEvent(new CustomEvent('data', { detail: new Uint8Array(dv.buffer) }));
-    });
+    };
+    this.#char.addEventListener('characteristicvaluechanged', this.#onCharValue);
     await this.#char.startNotifications();
   }
 
