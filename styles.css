@@ -649,12 +649,13 @@ details[open] > summary { margin-bottom: 0.15rem; }
   color: inherit;
   resize: vertical;
 }
+/* One element, not a <pre> wrapping a <code>: the box the colours are written
+   into has to be the box that scrolls, and a nested child scrolls nothing. */
 .code__paint {
   position: absolute; inset: 0;
   overflow: hidden; pointer-events: none;
   color: var(--ink);
 }
-.code__paint code { font: inherit; }
 /* Only once the paint has something in it does the textarea hand over its
    colour; an editor whose highlighter never loaded stays plainly readable. */
 .code:has(#macro-paint:not(:empty)) #macro-source {

@@ -120,3 +120,14 @@ test('the textarea does not restate a metric the paint would not follow', () => 
     }
   }
 });
+
+// The overlay is one element on purpose. When the colours went into a <code>
+// inside the <pre>, the scroll sync set scrollTop on the child — which scrolls
+// nothing — and the highlighting stood still while the text moved under it.
+test('the painted overlay is a single element, so it cannot be scrolled by proxy', () => {
+  const html = readFileSync('index.html', 'utf8');
+  const tag = /<pre[^>]*class="code__paint"[^>]*>([\s\S]*?)<\/pre>/.exec(html);
+  assert.ok(tag, 'the overlay is gone');
+  assert.match(tag[0], /id="macro-paint"/, 'the painted id is not on the scrolling box');
+  assert.equal(tag[1].trim(), '', 'the overlay wraps a child — paint and scroll would split');
+});

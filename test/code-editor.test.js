@@ -79,6 +79,21 @@ test('scrolling the textarea scrolls the overlay with it, both axes', () => {
   assert.equal(output.scrollLeft, 8);
 });
 
+// The element the colours are written into has to be the element that scrolls.
+// Painting into a child and scrolling it moves nothing: the box with the
+// overflow is the parent, and the overlay stands still while the text runs on.
+test('the painted element is the one that scrolls', () => {
+  const { textarea, output, h } = rig();
+  h.attach();
+  textarea.value = 'a\n'.repeat(80);
+  h.paint();
+  const painted = output.innerHTML;
+  textarea.scrollTop = 240;
+  textarea.fire('scroll');
+  assert.equal(output.scrollTop, 240, 'the scrolled element is not the painted one');
+  assert.ok(painted.length > 0);
+});
+
 test('a highlighter that throws leaves the editor usable and stops repainting', () => {
   const { textarea, output, h } = rig({
     highlight: () => { throw new Error('grammar exploded'); },
