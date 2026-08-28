@@ -959,6 +959,34 @@ main:has(#dashboard[hidden]) { padding: 0; max-width: none; }
 
 /* ── Lede ── */
 #landing .lede { padding-top: clamp(2rem, 7vw, 4.5rem); }
+
+/* The brick belongs in the first view: it is what the page is about, and the
+   render used to sit two sections down. */
+/* On a phone it is a band, not a portrait: the full-height render pushed the
+   primary action off the first screen. */
+#landing figure.shot--hero { margin: 0 0 1.1rem; }
+#landing figure.shot--hero img { height: 116px; object-fit: contain; object-position: left center; }
+@media (min-width: 60rem) {
+  #landing .lede {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    column-gap: 3.5rem;
+    align-items: start;
+    grid-template-areas:
+      "kicker shot"
+      "title  shot"
+      "sub    shot"
+      "does   does";
+  }
+  #landing .lede > .kicker { grid-area: kicker; }
+  #landing .lede > h1 { grid-area: title; }
+  #landing .lede > .sub { grid-area: sub; }
+  #landing .lede > .does { grid-area: does; }
+  #landing figure.shot--hero {
+    grid-area: shot; align-self: center; margin: 0;
+  }
+  #landing figure.shot--hero img { height: auto; object-fit: fill; }
+}
 #landing .kicker {
   font: 400 0.7rem/1.4 var(--mono);
   letter-spacing: 0.18em; text-transform: uppercase;
@@ -1074,7 +1102,40 @@ main:has(#dashboard[hidden]) { padding: 0; max-width: none; }
 
 /* ── Sections ── */
 #landing .sec { margin-top: clamp(3rem, 8vw, 5.5rem); padding-top: 1.4rem; }
-#landing .sec { border-top: 1px solid var(--rule); }
+#landing .sec { border-top: 1px solid var(--rule); position: relative; }
+
+/* The rule carries studs, and the filled count is the section's index. Drawn
+   with gradients on the palette tokens rather than an SVG so the hollow ring
+   follows --rule into the dark scheme. */
+#landing .sec::before,
+#landing .sec::after {
+  content: ""; position: absolute; left: 0; top: -5px; height: 10px;
+  background-repeat: repeat-x; background-size: 15px 10px;
+}
+#landing .sec::before {
+  width: 90px;
+  background-image: radial-gradient(circle at 5px 5px,
+    var(--paper) 3.2px, var(--rule) 3.2px, var(--rule) 4.2px, transparent 4.2px);
+}
+#landing .sec::after {
+  width: calc(var(--studs, 0) * 15px);
+  background-image: radial-gradient(circle at 5px 5px,
+    var(--accent) 3.2px, var(--accent-edge) 3.2px, var(--accent-edge) 4.2px, transparent 4.2px);
+}
+#landing #features { --studs: 1; }
+#landing #hardware { --studs: 2; }
+#landing #moc      { --studs: 3; }
+#landing #how      { --studs: 4; }
+#landing #need     { --studs: 5; }
+#landing #safety   { --studs: 6; }
+
+/* Wide enough for a rail: the index leaves the heading line and hangs in the
+   margin, so the six sections read as a numbered document. */
+@media (min-width: 60rem) {
+  #landing .sec { padding-left: 100px; }
+  #landing .sec > h2 { position: relative; }
+  #landing .sec > h2 i { position: absolute; left: -100px; top: 0.1em; }
+}
 #landing h2 {
   font-size: clamp(1.1rem, 2.4vw, 1.35rem); font-weight: 700;
   letter-spacing: 0.02em; margin: 0 0 1.4rem;
@@ -1160,7 +1221,7 @@ main:has(#dashboard[hidden]) { padding: 0; max-width: none; }
 }
 #landing .does span { font-size: 0.88rem; color: var(--ink-soft); }
 @media (max-width: 44rem) {
-  #landing .does { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem 1rem; }
+  #landing .does { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem 1rem; }
   #landing .does span { font-size: 0.82rem; }
 }
 
