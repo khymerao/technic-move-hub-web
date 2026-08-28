@@ -270,3 +270,65 @@ test('controller: a resting stick offset does not keep the link busy', async () 
   h.advanceSteadily(4000);
   assert.equal(p.writes.length, 0, 'a car at rest must not be kept awake by stick noise');
 });
+
+// A model built with the drive or the rack mirrored has nothing to correct with
+// on this path: the hub owns its own ports and setMotorInverted never runs.
+// See docs/DESIGN-NOTES.md § The combined frame carries its own inversion
+test('controller: reversing the throttle flips the speed byte and nothing else', async () => {
+  const h = harness();
+  const p = fakeProtocol();
+  const c = await armed(p, h);
+  c.invert = { speed: true, steer: false };
+  c.set(50, 20);
+  const b = p.writes[0].bytes;
+  assert.equal(b[9], 256 - 50, 'speed reversed');
+  assert.equal(b[10], 20, 'steering untouched');
+  assert.equal(c.speed, -50);
+  assert.equal(c.steer, 20);
+});
+
+test('controller: reversing the steering flips the angle byte and nothing else', async () => {
+  const h = harness();
+  const p = fakeProtocol();
+  const c = await armed(p, h);
+  c.invert = { speed: false, steer: true };
+  c.set(50, 20);
+  const b = p.writes[0].bytes;
+  assert.equal(b[9], 50, 'speed untouched');
+  assert.equal(b[10], 256 - 20, 'steering reversed');
+});
+
+test('controller: reversing both is both, and zero stays zero', async () => {
+  const h = harness();
+  const p = fakeProtocol();
+  const c = await armed(p, h);
+  c.invert = { speed: true, steer: true };
+  c.set(-40, -30);
+  assert.equal(c.speed, 40);
+  assert.equal(c.steer, 30);
+  c.set(0, 0);
+  assert.equal(c.speed, 0, 'a stop is a stop either way round');
+  assert.equal(c.steer, 0);
+});
+
+// The deadband is what decides a command is nothing; reversing must not smuggle
+// a value past it, or below it.
+test('controller: reversing happens after the deadband, not around it', async () => {
+  const h = harness();
+  const p = fakeProtocol();
+  const c = await armed(p, h);
+  c.invert = { speed: true, steer: true };
+  c.set(2, -2);
+  assert.equal(c.speed, 0);
+  assert.equal(c.steer, 0);
+});
+
+test('controller: an unreversed controller sends exactly what it always did', async () => {
+  const h = harness();
+  const p = fakeProtocol();
+  const c = await armed(p, h);
+  c.set(50, 20);
+  assert.equal(c.speed, 50);
+  assert.equal(c.steer, 20);
+  assert.deepEqual(c.invert, { speed: false, steer: false });
+});

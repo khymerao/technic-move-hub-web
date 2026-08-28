@@ -250,6 +250,9 @@ async function onConnect() {
       await steering.start();
     }
     hub.playvm = new PlayVmController(protocol);
+    // The controller is rebuilt on every reconnect and carries no settings, so
+    // the stored reversal has to be pushed onto the new instance from here.
+    drivePanel.applyInvert();
     hub.gamepad = new GamepadController(protocol, protocol.roles, hub.steering,
       motors.shouldBrake, hub.playvm);
     hub.gamepad.haptics = hub.haptics;

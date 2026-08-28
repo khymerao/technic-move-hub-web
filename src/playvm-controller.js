@@ -78,6 +78,12 @@ export class PlayVmController {
   #lights = PLAYVM_LIGHTS.OFF;
   #lastKey = null;
 
+  // The car's wiring, not the driver's taste: a model whose drive or rack is
+  // built mirrored answers a positive command by going the wrong way. Public
+  // and mutable — the panel owns the value and this owns what it means.
+  // See docs/DESIGN-NOTES.md § The combined frame carries its own inversion
+  invert = { speed: false, steer: false };
+
   #init;
   #heartbeatMs;
   #ttlMs;
@@ -107,6 +113,11 @@ export class PlayVmController {
   get armed() { return this.#armed; }
   get lights() { return this.#lights; }
 
+  // What actually left for the hub, after the inversion below — which is not
+  // what the gauges show. See docs/DESIGN-NOTES.md § The combined frame carries its own inversion
+  get speed() { return this.#speed; }
+  get steer() { return this.#steer; }
+
   // Arming sweeps the steering rack to its end stops, so it is never implicit.
   // See docs/DESIGN-NOTES.md § Arming is never implicit
   async arm() {
@@ -131,8 +142,15 @@ export class PlayVmController {
       const n = Math.max(-100, Math.min(100, Math.round(v)));
       return Math.abs(n) < PLAYVM_DEADBAND ? 0 : n;
     };
-    this.#speed = clamp(speed);
-    this.#steer = clamp(steer);
+    // Inverted here rather than at the input: the per-motor path has
+    // setMotorInverted and the combined frame never touches it, so a model
+    // built with the drive or the rack mirrored had nothing to correct with.
+    // `|| 0` because negating a resting zero yields -0, which is equal to zero
+    // everywhere except Object.is — and Object.is is what the memoised panel
+    // writers compare with.
+    // See docs/DESIGN-NOTES.md § The combined frame carries its own inversion
+    this.#speed = (this.invert.speed ? -clamp(speed) : clamp(speed)) || 0;
+    this.#steer = (this.invert.steer ? -clamp(steer) : clamp(steer)) || 0;
     // Renews the licence to keep refreshing; see #keepAlive's dead man's switch.
     this.#lastSetAt = this.#now();
     this.#push();

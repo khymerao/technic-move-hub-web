@@ -556,6 +556,12 @@
               <option value="coast">Coast — free-wheel</option>
             </select>
           </label>
+          <div class="d-invert" data-mode="playvm">
+            <span class="lights-head">reverse</span>
+            <button id="gp-inv-speed" type="button" aria-pressed="false">throttle: NORMAL</button>
+            <button id="gp-inv-steer" type="button" aria-pressed="false">steering: NORMAL</button>
+          </div>
+          <p class="note" data-mode="playvm">For a model built mirrored. Motor direction in Setup does not reach the combined frame — the hub drives its own ports there.</p>
           <pre id="gp-live">A 0 · steer 0 · trim 0</pre>
         </div>
       </section>
