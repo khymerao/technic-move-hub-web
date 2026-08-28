@@ -42,8 +42,13 @@ function setStatus(text, state) {
   $('status').hidden = !problem;
   $('status').textContent = text;
   $('status-full').textContent = text;
-  const quiet = state === 'up';
-  $('status-brief').textContent = quiet ? '' : (text.length > 22 ? text.slice(0, 21) + '…' : text);
+  // The chip is the dot and nothing else: the words were duplicated by the line
+  // below it and truncated to uselessness at the width the bar can spare. They
+  // live in the tooltip, in the Hub tab, and in the debug log.
+  // See docs/DESIGN-NOTES.md § Status words are for problems; the dot carries a healthy link
+  const chip = $('chrome-status');
+  chip.title = text;
+  chip.setAttribute('aria-label', `Link status: ${text} — open the Hub tab`);
   $('state-dot').className = state ?? '';
 }
 

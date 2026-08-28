@@ -336,24 +336,6 @@ details[open] > summary { margin-bottom: 0.15rem; }
   50% { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25) inset, 0 0 0 7px transparent; }
 }
 
-/* With a message the chip becomes a tinted pill: the text needs a surface to
-   sit on, and the tint says how bad it is without a second colour system. */
-#chrome-status:has(#status-brief:not(:empty)) {
-  background: color-mix(in srgb, var(--tint, var(--sunken)) 22%, transparent);
-  border-radius: 999px;
-  padding-right: 0.7rem;
-}
-#chrome-status:has(.down) { --tint: var(--dot-down); }
-#chrome-status:has(.warn) { --tint: var(--dot-warn); }
-
-/* Colour is not the only carrier: every state except a healthy link also
-   writes its reason into #status-brief. */
-#status-brief {
-  font-size: 0.72rem; font-weight: 500;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 11ch;
-}
-#status-brief:empty { display: none; }
 
 /* The bar and the number sit on one baseline, and the whole group is one
    inline row so it cannot drift as the readouts change width. */
@@ -711,6 +693,12 @@ body:not(:has(#dashboard:not([hidden]))) #chrome { display: none; }
   background: transparent;
   font-size: 0.8rem;
 }
+/* Once a hub is attached this line is the chip's own text a second time, in a
+   band above every tab. The reason a driver needs is on the dot's tooltip and
+   in the Hub tab; this stays for the failures that happen before there is a
+   dashboard to put them in.
+   See docs/DESIGN-NOTES.md § Status words are for problems; the dot carries a healthy link */
+main:has(#dashboard:not([hidden])) #status { display: none; }
 
 #tabbar {
   display: flex;
