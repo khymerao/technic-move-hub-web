@@ -95,3 +95,28 @@ test('the recorder controls carry their own rules', () => {
   assert.match(bodyFor('.macro-note'), /font-size:\s*0\.8rem/,
     'the note is an aside under the bar, not a second heading');
 });
+
+// The highlight overlay only stays in register while both boxes are measured
+// the same. Declaring those metrics once, in a shared rule, is what makes that
+// true; a later padding tweak on the textarea alone is the way it breaks.
+// See docs/DESIGN-NOTES.md § The editor is a textarea with a painted shadow
+test('the editor and its paint share one set of metrics', () => {
+  const shared = rules().filter(
+    (r) => r.selectors.includes('#macro-source') && r.selectors.includes('.code__paint'));
+  assert.equal(shared.length, 1, 'the two boxes are no longer sized by one rule');
+  for (const prop of ['padding', 'font-family', 'font-size', 'line-height',
+    'white-space', 'overflow-wrap']) {
+    assert.match(shared[0].body, new RegExp(`${prop}\\s*:`), `${prop} is not shared`);
+  }
+});
+
+test('the textarea does not restate a metric the paint would not follow', () => {
+  const own = rules().filter(
+    (r) => r.selectors.length === 1 && r.selectors[0] === '#macro-source');
+  for (const r of own) {
+    for (const prop of ['padding', 'font-size', 'line-height', 'white-space']) {
+      assert.doesNotMatch(r.body, new RegExp(`(^|;)\\s*${prop}\\s*:`),
+        `${prop} is set on the textarea alone — the paint will drift`);
+    }
+  }
+});

@@ -786,10 +786,13 @@
                 <output id="macro-elapsed">0.0s</output>
               </div>
               <p id="macro-record-note" class="macro-note" hidden></p>
-              <textarea id="macro-source" spellcheck="false" rows="14"
-                aria-label="Macro source" placeholder="await drive(40, 0);
+              <div class="code">
+                <pre class="code__paint" aria-hidden="true"><code id="macro-paint"></code></pre>
+                <textarea id="macro-source" spellcheck="false" rows="14"
+                  aria-label="Macro source" placeholder="await drive(40, 0);
 await wait(500);
 await stopDrive();"></textarea>
+              </div>
               <pre id="macro-status">idle</pre>
             </div>
 

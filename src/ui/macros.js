@@ -9,6 +9,7 @@ import { EXAMPLES } from '../macro/api-docs.js';
 import { createMacroStore } from '../macro/store.js';
 import { SOURCE_LINE_OFFSET } from '../macro/rpc.js';
 import { rideToMacro, DEFAULT_EPSILON } from '../macro/ride-to-macro.js';
+import { createHighlighter } from './code-editor.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 400;
 const ELAPSED_TICK_MS = 100;
@@ -48,6 +49,7 @@ export function initMacroPanel(hub) {
   const newBtn = $('macro-new');
   const deleteBtn = $('macro-delete');
   const source = $('macro-source');
+  const paint = $('macro-paint');
   const runBtn = $('macro-run');
   const stopBtn = $('macro-stop');
   const unsafeBox = $('macro-unsafe');
@@ -60,6 +62,34 @@ export function initMacroPanel(hub) {
   const epsilonInput = $('macro-epsilon');
   const epsilonOut = $('macro-epsilon-out');
   const noteEl = $('macro-record-note');
+
+  // The grammar is 27 KB and the landing page is served no-store, so it is
+  // fetched the first time someone puts a caret in the editor and never before.
+  // See docs/DESIGN-NOTES.md § The editor is a textarea with a painted shadow
+  let highlighter = null;
+  let arming = false;
+  async function armHighlighter() {
+    if (highlighter || arming) return;
+    arming = true;
+    try {
+      const [core, grammar] = await Promise.all([
+        import('../../assets/hljs/core.min.js'),
+        import('../../assets/hljs/javascript.min.js'),
+      ]);
+      const hljs = core.default;
+      hljs.registerLanguage('javascript', grammar.default);
+      highlighter = createHighlighter({
+        textarea: source,
+        output: paint,
+        highlight: (code) => hljs.highlight(code, { language: 'javascript' }).value,
+      });
+      highlighter.attach();
+      highlighter.paint();
+    } catch {
+      // No highlighting, no problem: the textarea keeps its own colour.
+    }
+  }
+  source.addEventListener('focus', armHighlighter, { once: true });
 
   const store = createMacroStore(localStorage);
 
@@ -167,6 +197,7 @@ export function initMacroPanel(hub) {
   function loadCurrent() {
     const m = currentMacro();
     source.value = m?.source ?? '';
+    highlighter?.paint();
     // Reflects store.js's stored flag; an import already forces it to false
     // regardless of the file's claim.
     unsafeBox.checked = m?.allowUnsafe === true;
@@ -284,6 +315,7 @@ export function initMacroPanel(hub) {
       recorded.updatedAt = Date.now();
     }
     source.value = text;
+    highlighter?.paint();
     unsafeBox.checked = false;
     paintButtons();
     help?.render();

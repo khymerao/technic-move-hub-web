@@ -40,6 +40,12 @@
   /* Dark enough for white text against either scheme, so one token covers
      both. --danger-text is the variant for danger-coloured *text* on Canvas,
      which does need to flip. */
+  /* Code text is body text, and the dot and edge tokens were not drawn for it:
+     --dot-up on paper is 4.13:1 and --accent-edge 3.64:1, both under AA. These
+     two are the same hues taken far enough down to clear it. */
+  --code-string: #146b3a;
+  --code-number: #8a6114;
+
   --danger: #b3261e;
   --danger-ink: #ffffff;
   --danger-text: #b3261e;
@@ -70,6 +76,8 @@
     --ink-soft: #9d978a;
     --rule: #33302a;
     --rule-hard: #f0ece2;
+    --code-string: #4ad07d;
+    --code-number: #d2a03c;
     --danger-text: #ff9b8f;
     --focus: #7db4ff;
     --dot-up: #4ad07d;
@@ -615,18 +623,54 @@ details[open] > summary { margin-bottom: 0.15rem; }
   .macro-method-list { max-height: none; }
 }
 
-#macro-source {
+/* The editor is two stacked boxes: the paint underneath carries the colours,
+   the textarea on top carries the caret and the selection. Every metric below
+   is shared by both, and a difference in any one of them shows up as text
+   sliding out of register.
+   See docs/DESIGN-NOTES.md § The editor is a textarea with a painted shadow */
+.code { position: relative; }
+#macro-source, .code__paint {
   width: 100%;
   min-height: 16rem;
+  margin: 0;
   padding: 0.6rem 0.7rem;
   font-family: ui-monospace, monospace; font-size: 0.85rem; line-height: 1.5;
   /* Wraps rather than scrolling sideways — the one rule every surface in
      this file follows. */
   overflow-wrap: anywhere;
-  border-radius: 6px; border: 1px solid var(--line);
-  background: transparent; color: inherit;
+  white-space: pre-wrap;
+  border-radius: 6px; border: 1px solid transparent;
+  tab-size: 2;
+}
+#macro-source {
+  position: relative;
+  border-color: var(--line);
+  background: transparent;
+  color: inherit;
   resize: vertical;
 }
+.code__paint {
+  position: absolute; inset: 0;
+  overflow: hidden; pointer-events: none;
+  color: var(--ink);
+}
+.code__paint code { font: inherit; }
+/* Only once the paint has something in it does the textarea hand over its
+   colour; an editor whose highlighter never loaded stays plainly readable. */
+.code:has(#macro-paint:not(:empty)) #macro-source {
+  color: transparent;
+  caret-color: var(--ink);
+}
+
+/* One accent, one meaning holds here too: this is an instrument, not a
+   rainbow. Four roles — ordinary code, the quiet things, strings, numbers —
+   plus weight for keywords, all on the palette the rest of the page uses. */
+.hljs-comment, .hljs-quote { color: var(--ink-soft); font-style: italic; }
+.hljs-keyword, .hljs-built_in, .hljs-literal { font-weight: 700; }
+.hljs-literal, .hljs-number { color: var(--code-number); }
+.hljs-string, .hljs-regexp { color: var(--code-string); }
+.hljs-title, .hljs-title.function_, .hljs-attr, .hljs-property { color: var(--ink); }
+.hljs-punctuation, .hljs-operator { color: var(--ink-soft); }
 
 /* Run first and widest: it is the only thing on this bar anyone came for.
    Stop wears the danger colour while it can do something and nothing when it
