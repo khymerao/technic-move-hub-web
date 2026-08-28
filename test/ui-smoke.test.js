@@ -378,8 +378,10 @@ test('a rejected orientation subscription does not stop the steer subscription',
 // test used to pass against ids (`d-drive-row`, `d-throttleB-gauge`) that are
 // in no HTML file, and deleting `data-mode="independent"` from the real markup
 // left it green. Read the shipped attributes instead.
+const indexHtml = () => readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+
 function modeScopedMarkup() {
-  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const html = indexHtml();
   const open = /<(\w+)\s([^>]*\bdata-mode="([^"]*)"[^>]*)>/g;
   const out = [];
   let m;
@@ -756,6 +758,13 @@ function fakeMacroHost() {
     abort(reason) { calls.push(['abort', reason]); },
   };
 }
+
+test('the macro bar carries the recorder controls', () => {
+  const html = indexHtml();
+  for (const id of ['macro-record', 'macro-epsilon', 'macro-epsilon-out', 'macro-record-note']) {
+    assert.match(html, new RegExp(`id="${id}"`), `missing #${id}`);
+  }
+});
 
 test('macros panel: every control survives, and Run is gated on hub.macro', async () => {
   const byId = installDom();

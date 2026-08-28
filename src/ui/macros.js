@@ -8,6 +8,7 @@ import { initMacroHelp } from './macro-help.js';
 import { EXAMPLES } from '../macro/api-docs.js';
 import { createMacroStore } from '../macro/store.js';
 import { SOURCE_LINE_OFFSET } from '../macro/rpc.js';
+import { rideToMacro, DEFAULT_EPSILON } from '../macro/ride-to-macro.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 400;
 const ELAPSED_TICK_MS = 100;
@@ -55,6 +56,10 @@ export function initMacroPanel(hub) {
   const exportBtn = $('macro-export');
   const importBtn = $('macro-import');
   const importFile = $('macro-import-file');
+  const recordBtn = $('macro-record');
+  const epsilonInput = $('macro-epsilon');
+  const epsilonOut = $('macro-epsilon-out');
+  const noteEl = $('macro-record-note');
 
   const store = createMacroStore(localStorage);
 
@@ -72,14 +77,28 @@ export function initMacroPanel(hub) {
   let startedAt = 0;
   let lastResult = null; // the last run's formatted result, read by the following 'idle'
 
+  let recording = false;
+  let ride = null;        // the raw ride, this session only — never written to storage
+  let recorded = null;    // the emitted slot, held here until it is saved once
+  let recordedSaved = false;
+
+  const isConnected = () => hub.connected ?? hub.transport?.connected ?? false;
+
   function paintButtons() {
-    runBtn.disabled = !hub.macro || running;
+    runBtn.disabled = !hub.macro || running || recording;
     stopBtn.disabled = !running;
-    deleteBtn.disabled = !currentId;
+    deleteBtn.disabled = !currentId || recording;
+    recordBtn.disabled = !hub.recorder || !isConnected() || running;
+    recordBtn.textContent = recording ? 'Stop recording' : 'Record';
+    newBtn.disabled = recording;
+    importBtn.disabled = recording;
+    select.disabled = recording;
   }
 
   function currentMacro() {
-    return store.list().find((m) => m.id === currentId) ?? null;
+    const stored = store.list().find((m) => m.id === currentId);
+    if (stored) return stored;
+    return recorded && recorded.id === currentId ? recorded : null;
   }
 
   const option = (value, label) => {
@@ -94,7 +113,10 @@ export function initMacroPanel(hub) {
   // a macro on opposite sides of the screen.
   // See docs/DESIGN-NOTES.md § The macro palette is grouped, and sits beside the editor
   function renderSelect() {
-    const macros = [...store.list()].sort((a, b) => a.name.localeCompare(b.name));
+    const stored = [...store.list()];
+    const macros = (recorded && !stored.some((m) => m.id === recorded.id)
+      ? [...stored, recorded]
+      : stored).sort((a, b) => a.name.localeCompare(b.name));
     select.replaceChildren();
     if (!macros.length) {
       select.append(option('', 'no macros yet — New, or copy a sample'));
@@ -157,8 +179,12 @@ export function initMacroPanel(hub) {
   // from every path that switches slots, so the refusal is caught here rather
   // than at each of those call sites — one of them used to let it escape a
   // click handler and the rest let it die in a timer, unseen.
-  function persist() {
+  function persist(manual = false) {
     if (!currentId) return;
+    if (recorded && currentId === recorded.id && !recordedSaved) {
+      if (!manual) return;
+      recordedSaved = true;
+    }
     const existing = currentMacro();
     try {
       store.save({
@@ -214,12 +240,12 @@ export function initMacroPanel(hub) {
   });
 
   source.addEventListener('input', scheduleAutosave);
-  unsafeBox.addEventListener('change', persist);
+  unsafeBox.addEventListener('change', () => persist(true));
 
   runBtn.addEventListener('click', () => {
     if (!hub.macro) return;
     flushAutosave();
-    persist();
+    persist(true);
     lastResult = null;
     setStatus('starting…', 'live');
     // run() rejects on "already running" and on anything spawnWorker throws —
@@ -230,6 +256,80 @@ export function initMacroPanel(hub) {
 
   // The reason is rendered as `stopped: …`, so it reads as the cause, not a sentence.
   stopBtn.addEventListener('click', () => { hub.macro?.abort('by the Stop button'); });
+
+  const showNote = (text) => { noteEl.textContent = text ?? ''; noteEl.hidden = !text; };
+
+  const tolerance = () => {
+    const n = Number(epsilonInput.value);
+    return Number.isFinite(n) && n > 0 ? Math.round(n) : DEFAULT_EPSILON.speed;
+  };
+
+  // The ride lands in a slot of its own.
+  // See docs/DESIGN-NOTES.md § A recording lands in a slot of its own
+  function emit() {
+    if (!ride) return;
+    const n = tolerance();
+    const { source: text, warnings } = rideToMacro(ride, { epsilon: { speed: n, steer: n } });
+    if (!recorded || currentId !== recorded.id) {
+      flushAutosave();
+      recorded = {
+        id: 'rec' + Date.now().toString(36),
+        name: uniqueName('recording'), source: text, allowUnsafe: false, updatedAt: Date.now(),
+      };
+      recordedSaved = false;
+      currentId = recorded.id;
+      renderSelect();
+    } else {
+      recorded.source = text;
+      recorded.updatedAt = Date.now();
+    }
+    source.value = text;
+    unsafeBox.checked = false;
+    paintButtons();
+    help?.render();
+    setStatus(warnings.length ? `recorded — ${warnings[0]}` : `recorded into ${recorded.name}`);
+  }
+
+  function startRecording() {
+    if (recording || !hub.recorder) return;
+    flushAutosave();
+    if (recordedSaved) { recorded = null; recordedSaved = false; }
+    ride = null;
+    showNote('');
+    hub.recorder.start();
+    recording = true;
+    paintButtons();
+    setStatus('recording — drive the car', 'live');
+  }
+
+  // Task 4 calls this from the composition root for every ending the panel
+  // cannot see: a collision, a disconnect, a blur, a mode switch.
+  function stopRecording(reason = 'user') {
+    if (!recording) return;
+    recording = false;
+    const taken = hub.recorder?.stop(reason) ?? null;
+    paintButtons();
+    if (!taken || !taken.frames?.length) {
+      showNote('nothing was recorded — the car never moved');
+      setStatus(`recording ended: ${reason}`);
+      return;
+    }
+    ride = taken;
+    recorded = null;
+    recordedSaved = false;
+    showNote('');
+    emit();
+  }
+
+  recordBtn.addEventListener('click', () => {
+    if (recording) stopRecording('user');
+    else startRecording();
+  });
+
+  epsilonInput.addEventListener('input', () => {
+    epsilonOut.textContent = String(tolerance());
+    if (ride) emit();
+  });
 
   exportBtn.addEventListener('click', () => {
     const blob = new Blob([store.exportAll()], { type: 'application/json' });
@@ -285,6 +385,8 @@ export function initMacroPanel(hub) {
 
   renderSelect();
   loadCurrent();
+  showNote('');
+  epsilonOut.textContent = String(tolerance());
   paintButtons();
 
   // store.save() throws when localStorage is full; this origin's quota is
@@ -292,5 +394,5 @@ export function initMacroPanel(hub) {
   help = initMacroHelp({ source, unsafeBox, onInsert: scheduleAutosave });
   help.render();
 
-  return { showState, showElapsed, showPrint, showNotice };
+  return { showState, showElapsed, showPrint, showNotice, stopRecording };
 }

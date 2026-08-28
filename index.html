@@ -702,9 +702,16 @@
               <div class="macro-bar">
                 <button id="macro-run" type="button" disabled>Run</button>
                 <button id="macro-stop" type="button" disabled>Stop</button>
+                <button id="macro-record" type="button" disabled>Record</button>
+                <label class="macro-epsilon">
+                  tolerance
+                  <input id="macro-epsilon" type="range" min="3" max="25" step="1" value="5" />
+                  <output id="macro-epsilon-out">5</output>
+                </label>
                 <label><input id="macro-unsafe" type="checkbox" /> unsafe</label>
                 <output id="macro-elapsed">0.0s</output>
               </div>
+              <p id="macro-record-note" class="macro-note" hidden></p>
               <textarea id="macro-source" spellcheck="false" rows="14"
                 aria-label="Macro source" placeholder="await drive(40, 0);
 await wait(500);

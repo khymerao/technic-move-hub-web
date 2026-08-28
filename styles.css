@@ -635,6 +635,10 @@ details[open] > summary { margin-bottom: 0.15rem; }
 .macro-bar button { flex: 0 1 auto; min-height: var(--tap); padding: 0.5rem 1.1rem; font-size: 0.85rem; }
 .macro-bar #macro-run { flex: 1 1 8rem; font-weight: 600; }
 .macro-bar #macro-stop:not(:disabled) { color: var(--danger-text); border-color: currentColor; }
+.macro-bar #macro-record:not(:disabled) { color: var(--danger-text); border-color: currentColor; }
+.macro-bar .macro-epsilon { display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; }
+.macro-bar .macro-epsilon input { flex: 0 1 6rem; }
+.macro-note { margin: 0.35rem 0 0; font-size: 0.8rem; color: var(--muted); }
 .macro-bar label { flex: 0 0 auto; min-height: 0; }
 #macro-elapsed {
   flex: 1 1 5ch; text-align: right;

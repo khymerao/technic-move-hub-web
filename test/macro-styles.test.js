@@ -84,3 +84,14 @@ test('a sticky group heading is painted above the rows that scroll under it', ()
   assert.match(body, /z-index:\s*[1-9]/,
     'without this the rows paint over the heading they scroll under');
 });
+
+test('the recorder controls carry their own rules', () => {
+  assert.match(bodyFor('.macro-bar #macro-record:not(:disabled)'), /color:\s*var\(--danger-text\)/,
+    'an armed Record reads as an alarm the way Stop does');
+  const epsilon = bodyFor('.macro-bar .macro-epsilon');
+  assert.match(epsilon, /display:\s*flex/, 'the label, slider and readout sit on one line');
+  assert.match(bodyFor('.macro-bar .macro-epsilon input'), /flex:\s*0 1 6rem/,
+    'an unsized range input takes the whole bar row');
+  assert.match(bodyFor('.macro-note'), /font-size:\s*0\.8rem/,
+    'the note is an aside under the bar, not a second heading');
+});

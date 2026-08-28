@@ -27,6 +27,8 @@ import { initCollisionPanel } from './ui/collision.js';
 import { initMotionPanel } from './ui/motion.js';
 import { initDrivePanel } from './ui/drive-panel.js';
 import { initMacroPanel } from './ui/macros.js';
+import { createRideRecorder } from './macro/ride-recorder.js';
+import { createRideStreams, rideState, rideTelemetry } from './macro/ride-streams.js';
 import { initWire } from './ui/wire.js';
 import { initShare } from './ui/share.js';
 
@@ -96,6 +98,33 @@ hub.macro = createMacroHost(hub, {
   onPrint: (args) => macroPanel.showPrint(args),
   onNotice: (text) => macroPanel.showNotice(text),
 });
+// Two clocks, neither derived from the other: `now` orders the frames, the wall
+// clock only dates the header.
+const recorder = createRideRecorder({
+  now: () => performance.now(),
+  wallClock: () => Date.now(),
+});
+const rideStreams = createRideStreams({
+  protocol: () => hub.protocol,
+  onChannel: (name) => recorder.channel(name),
+  log,
+});
+hub.recorder = {
+  get recording() { return recorder.recording; },
+  start() {
+    recorder.start();
+    return rideStreams.acquire();
+  },
+  stop(reason) {
+    const ride = recorder.stop(reason);
+    rideStreams.release();
+    return ride;
+  },
+  channel: (n) => recorder.channel(n),
+  observe: (d) => recorder.observe(d),
+  telemetry: (k, d) => recorder.telemetry(k, d),
+};
+
 const macroPanel = initMacroPanel(hub);
 
 // Sources first, power second. The order is load-bearing.
@@ -115,6 +144,10 @@ function emergencyStop(reason = 'emergency stop') {
   // and a stop() is refused while watching.
   // See docs/DESIGN-NOTES.md § Watch mode suppresses every source, not just the pad
   hub.macro?.abort(reason);
+  // The pad's own loop reports none of these: the focus gate returns above the
+  // `state` dispatch, so a blur and a disconnect would otherwise land in the
+  // recording with no reason at all.
+  macroPanel.stopRecording(reason);
   // The on-screen controls are a source too, and they are released before the
   // loop: it is still armed for another frame and would re-command from them.
   drivePanel.reset();
@@ -178,6 +211,7 @@ async function onConnect() {
   hub.collision.addEventListener('cut', (e) => {
     hub.haptics?.hit('cut', 1);
     if (e.detail?.mode !== 'stop') hub.macro?.abort('collision');
+    macroPanel.stopRecording('collision');
     motionStop();
   });
   hub.collision.addEventListener('impact', (e) => {
@@ -270,10 +304,14 @@ async function onConnect() {
     hub.gamepad.addEventListener('state', (e) => {
       gp.showState(e.detail);
       drivePanel.showState(e.detail);
+      if (recorder.recording) recorder.observe(rideState(e.detail, hub.gamepad?.params));
     });
     // The effective mode, which is not always the one that was asked for — so
     // this is attached before the default is applied, not after.
-    hub.gamepad.addEventListener('drivemode', (e) => drivePanel.showMode(e.detail.mode));
+    hub.gamepad.addEventListener('drivemode', (e) => {
+      drivePanel.showMode(e.detail.mode);
+      macroPanel.stopRecording('mode-switch');
+    });
     hub.gamepad.addEventListener('mapped', () => gp.renderMapping());
     // Applying the default is what makes it real; it arms the port and sweeps
     // the steering rack. See docs/DESIGN-NOTES.md § The hub's own drive mode is the default, and applying it is what makes it real
@@ -283,13 +321,24 @@ async function onConnect() {
     gp.renderMapping();
     collisionPanel.sync();
   });
+  // The recorder rides the listeners the app already has. It never subscribes:
+  // a second subscription would be a second holder on the same port.
+  const toRecorder = (kind, detail) => {
+    const sample = rideTelemetry(kind, detail);
+    if (sample) recorder.telemetry(kind, sample);
+  };
   protocol.addEventListener('orientation', (e) => {
     motion.showOrientation(e.detail);
     drivePanel.showOrientation(e.detail);
+    toRecorder('orientation', e.detail);
   });
   protocol.addEventListener('tilt', (e) => telemetry.showTilt(e.detail));
   protocol.addEventListener('battery', (e) => telemetry.showBattery(e.detail.percent));
-  protocol.addEventListener('speed', (e) => motors.showSpeed(e.detail.port, e.detail.speed));
+  protocol.addEventListener('speed', (e) => {
+    motors.showSpeed(e.detail.port, e.detail.speed);
+    toRecorder('speed', e.detail);
+  });
+  protocol.addEventListener('position', (e) => toRecorder('position', e.detail));
 
   try {
     setStatus('connecting…');
