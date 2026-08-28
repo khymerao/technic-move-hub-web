@@ -1149,6 +1149,21 @@ main:has(#dashboard[hidden]) { padding: 0; max-width: none; }
   #landing .verdict span { grid-column: 1 / -1; }
 }
 
+#landing .does {
+  list-style: none; margin: 1.8rem 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem 1.6rem;
+}
+#landing .does li { border-top: 1px solid var(--rule); padding-top: 0.55rem; }
+#landing .does b {
+  display: block; font: 700 0.78rem var(--mono); letter-spacing: 0.04em;
+  margin-bottom: 0.2rem;
+}
+#landing .does span { font-size: 0.88rem; color: var(--ink-soft); }
+@media (max-width: 44rem) {
+  #landing .does { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.7rem 1rem; }
+  #landing .does span { font-size: 0.82rem; }
+}
+
 #landing .setlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; }
 #landing .setlist li { border-left: 3px solid var(--accent); padding-left: 0.9rem; }
 #landing .setlist b { font: 700 0.85rem var(--mono); margin-right: 0.5rem; }

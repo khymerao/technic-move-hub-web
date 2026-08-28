@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Technic Move Hub 88019 controller — drive your own MOC from a browser</title>
-  <meta name="description" content="Drive the LEGO Technic Move Hub 88019 from Chrome over Web Bluetooth — in the set it came from or in your own MOC, which the official app cannot do. No install. 1167 tests." />
+  <meta name="description" content="Drive the LEGO Technic Move Hub 88019 from Chrome over Web Bluetooth — the set model or your own MOC. Gamepad, macros, record a drive as a script. No install." />
   <meta name="color-scheme" content="light dark" />
   <link rel="canonical" href="https://move-hub.site/" />
   <link rel="alternate" type="text/markdown" href="/llms.txt" title="llms.txt" />
@@ -45,12 +45,15 @@
           "Web Bluetooth control with no install",
           "Custom builds (MOCs): direct port modes that need no set profile and no end-stop calibration",
           "Steering zero, throw, gain and direction set by the builder",
-          "Touch and gamepad driving",
+          "Touch and gamepad driving, with every binding remappable by control and modifier layers",
           "Combined speed and steering frame handled by the hub",
           "Per-motor, tank and independent drive modes",
+          "Ride recorder: drive by hand and the page emits the drive as an editable macro",
+          "Macro scripting: a 36-call sandboxed JavaScript API for drive, motors, lights, sensors and waits",
           "Six-lamp array and status LED control",
           "Battery, tilt and accelerometer telemetry",
-          "Collision detection",
+          "Hub orientation drawn in 3D, with roll, pitch and yaw",
+          "Collision detection that cuts the motors and leaves the pad armed",
           "Gamepad haptics: a ride-feel rumble bed plus hits on impact and braking",
           "Raw LWP 3.0 protocol log"
         ]
@@ -106,7 +109,17 @@
           {
             "@type": "Question",
             "name": "Can I use a gamepad?",
-            "acceptedAnswer": { "@type": "Answer", "text": "Yes, and it is the intended way to drive. Any controller the browser exposes through the Gamepad API works, including an Xbox pad over Bluetooth or USB and PlayStation pads. Triggers drive, the stick steers, every action is remappable, and the control loop stops the car if the pad disconnects." }
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes, and it is the intended way to drive. Any controller the browser exposes through the Gamepad API works, including an Xbox pad over Bluetooth or USB and PlayStation pads. Triggers drive, the stick steers, every action is remappable by control rather than by button index, modifier layers give a second function to the same button, and the control loop stops the car if the pad disconnects." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I record a drive and play it back?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Arm the recorder in the Macros tab, drive the car by hand, and the page converts the drive into a macro: one command per stretch of steady driving, each line commented with what it was and what the hub's sensors reported at the time. A tolerance control re-writes the same ride more tightly or more loosely. Playback is open loop and timed, not servo-corrected, so straight sections repeat closely while turns drift — the recorder marks the turning lines as the ones that will." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I program or script the Technic Move Hub?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Macros are short JavaScript programs run in a sandboxed worker against a 36-call API covering driving, individual motors, lights, sensor reads and waits, with raw protocol writes available behind a per-macro flag. Every motion call carries a deadline, so a macro cannot leave a motor running. This is the custom programming the official app does not offer for this hub." }
           },
           {
             "@type": "Question",
@@ -172,24 +185,18 @@
             <b>Xbox controller</b> if you have one. No app, no account, no install.
           </p>
 
-          <ul class="verdict">
-            <li>
-              <b>The set it came in</b>
-              <span>42214 Lamborghini Revuelto, 42176 Porsche GT4, built as designed.</span>
-              <i>drives</i>
-            </li>
-            <li>
-              <b>A model you built</b>
-              <span>Any shape around the same hub. No set profile, no calibration
-                sweep — <a href="#moc">you set the steering zero and the throw</a>.</span>
-              <i>drives</i>
-            </li>
-            <li>
-              <b>The official app</b>
-              <span>Drives the hub through one set's profile. Change the rack and its
-                calibration stops describing the model.</span>
-              <i class="no">can't</i>
-            </li>
+          <ul class="does">
+            <li><b>Drive</b><span>Gamepad or on screen, in four modes — tank and
+              per-motor included.</span></li>
+            <li><b>Steer your way</b><span>You set straight, throw and
+              direction.</span></li>
+            <li><b>Record a ride</b><span>Drive by hand, get the drive back as a
+              script.</span></li>
+            <li><b>Script it</b><span>Short JavaScript programs, sandboxed.</span></li>
+            <li><b>Feel it</b><span>The pad rumbles with the drive, and hits when
+              the car does.</span></li>
+            <li><b>See it</b><span>Battery, tilt, 3D orientation, raw protocol
+              log.</span></li>
           </ul>
         </header>
 
@@ -198,6 +205,26 @@
           <a class="ghost" href="/guide">Controls guide</a>
         </p>
         <p class="micro" id="cta-note"></p>
+
+        <ul class="verdict">
+          <li>
+            <b>The set it came in</b>
+            <span>42214 Lamborghini Revuelto, 42176 Porsche GT4, built as designed.</span>
+            <i>drives</i>
+          </li>
+          <li>
+            <b>A model you built</b>
+            <span>Any shape around the same hub. No set profile, no calibration
+              sweep — <a href="#moc">you set the steering zero and the throw</a>.</span>
+            <i>drives</i>
+          </li>
+          <li>
+            <b>The official app</b>
+            <span>Drives the hub through one set's profile. Change the rack and its
+              calibration stops describing the model.</span>
+            <i class="no">can't</i>
+          </li>
+        </ul>
 
         <figure class="wire" aria-label="The live drive frame: the thirteen bytes this page writes to the hub">
           <div class="wire__scroll">
@@ -245,8 +272,72 @@
         </figure>
 
 
+        <section class="sec" id="features" aria-labelledby="h-features">
+          <h2 id="h-features"><i>01</i> What it does</h2>
+          <p class="answer">
+            <b>The page is the controller.</b> Once a hub connects, the same page
+            becomes a dashboard of seven tabs — Drive, Setup, Lights, Hub, Motion,
+            Macros and Debug — reachable from the tab bar or the number keys.
+          </p>
+
+          <h3>Driving</h3>
+          <table class="spec">
+            <tbody>
+              <tr><th>Four drive modes</th><td><b>Independent</b> puts each drive motor
+                on its own control, so the second one can raise, wind or tip something
+                instead of driving. <b>Tracked</b> counter-rotates the pair from one
+                stick — tank steering, no rack in the model at all. <b>Linked</b> drives
+                both together with steering on the page's own position loop. The
+                <b>combined frame</b> is the hub's own thirteen bytes.</td></tr>
+              <tr><th>Any gamepad</th><td>Xbox, PlayStation, Bluetooth or USB — anything
+                the browser exposes. Every binding is remappable by control rather than
+                by index, with modifier layers for a second function on the same button.
+                Touch controls do the same job without one.</td></tr>
+              <tr><th>Steering you set</th><td>Where straight is, how far it turns —
+                5° to 720° — gain, deadband, auto-return on release, inversion, and a
+                runaway cut-out that kills the motor when the position feedback stops
+                matching the command. Direction and brake-or-coast are set per motor.</td></tr>
+              <tr><th>Lights</th><td>Six lamp outputs on the model's own light pipes,
+                plus the hub's RGB status LED.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Recording and scripting</h3>
+          <table class="spec">
+            <tbody>
+              <tr><th>Record a ride</th><td>Arm the recorder in the Macros tab, drive
+                the car by hand, and the page writes the drive back out as a macro —
+                one command per stretch of steady driving, with a comment on each line
+                saying what it was and what the hub reported while it happened. A
+                tolerance control re-writes the same ride tighter or looser. Replay is
+                open loop: straights repeat well, turns drift.</td></tr>
+              <tr><th>Macros</th><td>Short JavaScript programs — drive, motors, lights,
+                sensor reads, waits — run in a worker against a
+                <a href="/guide#g-macros-tab">36-call API</a>, with raw frame writes
+                behind a per-macro flag. Editor, command palette and samples in one
+                panel.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>What it tells you</h3>
+          <table class="spec">
+            <tbody>
+              <tr><th>Rumble</th><td>If the pad has motors, it carries the drive: a bed
+                that rises with speed and steering load, and a single hit when the car
+                strikes something or the crash guard cuts the motors. Off until you
+                switch it on.</td></tr>
+              <tr><th>Instruments</th><td>Battery, tilt and motor readings; the hub's own
+                orientation drawn in 3D and as roll, pitch and yaw; and the raw LWP 3.0
+                traffic in a log you can read.</td></tr>
+              <tr><th>Crash guard</th><td>The accelerometer watches for impacts and cuts
+                the motors on its own. It leaves the loop armed, so the pad stays
+                yours.</td></tr>
+            </tbody>
+          </table>
+        </section>
+
         <section class="sec" id="hardware" aria-labelledby="h-hardware">
-          <h2 id="h-hardware"><i>01</i> The hardware</h2>
+          <h2 id="h-hardware"><i>02</i> The hardware</h2>
           <div class="sec__split">
             <figure class="shot">
               <img src="assets/module.png" alt="The LEGO Technic Move Hub: a grey brick with a USB-C charging port, a green status light, Technic pin holes along its length and motor axle outputs at each end."
@@ -280,7 +371,7 @@
         </section>
 
         <section class="sec" id="moc" aria-labelledby="h-moc">
-          <h2 id="h-moc"><i>02</i> Your own model</h2>
+          <h2 id="h-moc"><i>03</i> Your own model</h2>
           <p class="answer">
             <b>A model you built yourself drives from this page.</b> It does not have
             to look like the set the hub came in, and nothing here has to be told
@@ -298,36 +389,22 @@
             the hub's motor ports directly — no arming, no calibration sweep, no
             assumption about what the wheels are attached to.
           </p>
-          <table class="spec">
-            <tbody>
-              <tr><th>Independent</th><td>Each drive motor on its own control, so the
-                second motor can raise, wind or tip something instead of driving.</td></tr>
-              <tr><th>Tracked</th><td>The two motors counter-rotated from one stick —
-                tank steering, no steering rack in the model at all.</td></tr>
-              <tr><th>Linked</th><td>Both drive motors together, steering handled by the
-                page's own position loop.</td></tr>
-              <tr><th>Combined frame</th><td>The hub's own thirteen-byte frame. This is
-                the one that sweeps the steering rack to both end stops on arming, so
-                keep it for set-shaped steering and use the three above for a rebuild.</td></tr>
-            </tbody>
-          </table>
+          <p>
+            Only the fourth mode, the hub's own combined frame, sweeps the rack to its
+            end stops on arming — so keep that one for set-shaped steering and use
+            <a href="#features">one of the other three</a> for a rebuild.
+          </p>
           <h3>What the builder sets, not the set</h3>
           <ul class="setlist">
             <li><b>Where straight is</b>
               <span>Jog the rack by hand or by button until the wheels point straight,
                 then press Set zero. The zero is held in software, not read from the hub.</span></li>
             <li><b>How far it turns</b>
-              <span>Maximum angle anywhere from 5° to 720°, with gain, deadband,
-                auto-return on release and inversion, plus a runaway cut-out that kills
-                the motor when the position feedback stops matching the command.</span></li>
+              <span>Maximum angle anywhere from 5° to 720°, and the rest of the
+                <a href="#features">steering settings</a> are the builder's too.</span></li>
             <li><b>Which way each motor runs</b>
               <span>Direction is set per motor, and brake or coast on release is chosen
                 per motor too.</span></li>
-            <li><b>What it does on its own</b>
-              <span>Macros are short JavaScript programs — drive, motors, lights,
-                sensor reads, waits — run in a worker against a
-                <a href="/guide#g-macros-tab">36-call API</a>, with raw frame writes
-                behind a per-macro flag.</span></li>
           </ul>
           <h3>Why not the usual alternatives</h3>
           <p>
@@ -348,7 +425,7 @@
         </section>
 
         <section class="sec" id="how" aria-labelledby="h-how">
-          <h2 id="h-how"><i>03</i> How it was worked out</h2>
+          <h2 id="h-how"><i>04</i> How it was worked out</h2>
           <p class="answer">
             The hub speaks <b>LEGO Wireless Protocol 3.0</b> over a single Bluetooth
             characteristic. Ports are not hardcoded here — they are discovered at
@@ -374,7 +451,7 @@
         </section>
 
         <section class="sec" id="need" aria-labelledby="h-need">
-          <h2 id="h-need"><i>04</i> What you need</h2>
+          <h2 id="h-need"><i>05</i> What you need</h2>
           <table class="spec">
             <tbody>
               <tr><th>Hub</th><td>Technic Move Hub. It advertises as “Technic Move”.</td></tr>
@@ -382,19 +459,17 @@
                 Safari and Firefox do not implement Web Bluetooth; on iOS every browser
                 uses Safari's engine, so an iPhone needs one such as Bluefy.</td></tr>
               <tr><th>Controller</th><td>Optional. Any pad the browser can see —
-                Xbox, PlayStation, Bluetooth or USB. Fully remappable.</td></tr>
-              <tr><th>Rumble</th><td>If the pad has motors, it can carry the drive:
-                a bed that rises with speed and steering load, and a single hit when
-                the car strikes something or the crash guard cuts the motors. Off
-                until you switch it on, in Setup. Chrome, Edge and Safari 16.4+;
-                Firefox cannot vibrate a pad at all.</td></tr>
+                Xbox, PlayStation, Bluetooth or USB.</td></tr>
+              <tr><th>Rumble</th><td>Optional, and only if the pad has motors.
+                Chrome, Edge and Safari 16.4+ can drive them; Firefox cannot vibrate
+                a pad at all.</td></tr>
               <tr><th>Setup</th><td>None. No pairing in system settings, no app, no account.</td></tr>
             </tbody>
           </table>
         </section>
 
         <section class="sec sec--warn" id="safety" aria-labelledby="h-safety">
-          <h2 id="h-safety"><i>05</i> Before you drive</h2>
+          <h2 id="h-safety"><i>06</i> Before you drive</h2>
           <p>This moves a real machine. These three were earned, not imagined.</p>
           <ul class="warn">
             <li><span><b>The stops are automatic, not a button.</b> Losing the link,
