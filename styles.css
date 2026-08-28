@@ -975,13 +975,11 @@ main:has(#dashboard[hidden]) { padding: 0; max-width: none; }
     grid-template-areas:
       "kicker shot"
       "title  shot"
-      "sub    shot"
-      "does   does";
+      "sub    shot";
   }
   #landing .lede > .kicker { grid-area: kicker; }
   #landing .lede > h1 { grid-area: title; }
   #landing .lede > .sub { grid-area: sub; }
-  #landing .lede > .does { grid-area: does; }
   #landing figure.shot--hero {
     grid-area: shot; align-self: center; margin: 0;
   }
