@@ -71,3 +71,16 @@ test('a method row is not shrunk by the column flex list', () => {
   assert.match(row, /flex-shrink:\s*0/,
     'without this the rows collapse to ~10px and their text overlaps');
 });
+
+// A sticky heading with `z-index: auto` is painted in document order, so every
+// row after it draws on top: the signature vanishes behind the heading's fill
+// while the badge and the hint print over the heading's letters. Another
+// rendered-geometry bug that computed styles and behaviour tests both miss.
+test('a sticky group heading is painted above the rows that scroll under it', () => {
+  const body = bodyFor('.macro-group');
+  assert.match(body, /position:\s*sticky/, 'the heading is meant to stick');
+  assert.match(body, /background:\s*var\(--paper\)/,
+    'a transparent heading shows the rows through its own letters');
+  assert.match(body, /z-index:\s*[1-9]/,
+    'without this the rows paint over the heading they scroll under');
+});

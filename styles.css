@@ -672,6 +672,11 @@ details[open] > summary { margin-bottom: 0.15rem; }
   background: var(--paper);
   padding: 0.15rem 0.4rem;
   flex-shrink: 0;
+  /* A sticky element with `z-index: auto` is painted in document order, so the
+     rows that follow it draw ON TOP of the heading they scroll under: the
+     signature disappears behind the heading'''s fill while its badge and hint
+     print over the heading'''s own letters. */
+  z-index: 1;
 }
 .macro-group:first-child { margin-top: 0; }
 
