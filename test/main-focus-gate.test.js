@@ -8,7 +8,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { blurShouldStop } from '../src/focus-guard.js';
+import { blurShouldStop, swallowKey } from '../src/focus-guard.js';
 
 test('an armed loop that loses focus stops', () => {
   assert.equal(blurShouldStop({ running: true, hasFocus: () => false }), true);
@@ -24,4 +24,41 @@ test('a blur while nothing is running does not stop', () => {
 
 test('an absent hasFocus is treated as focus lost, so an armed loop stops', () => {
   assert.equal(blurShouldStop({ running: true, hasFocus: undefined }), true);
+});
+
+// The browser-swallowing decision, same shape and same reason: it has to be
+// testable without booting the composition root.
+
+const body = { tagName: 'BODY' };
+const field = { tagName: 'TEXTAREA' };
+
+test('an armed loop swallows the keys that would scroll or navigate the page', () => {
+  for (const key of [' ', 'Enter', 'Backspace', 'Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']) {
+    assert.equal(swallowKey({ running: true, key, target: body }), true, key);
+  }
+});
+
+test('a key nobody asked to swallow passes through', () => {
+  assert.equal(swallowKey({ running: true, key: 'q', target: body }), false);
+});
+
+test('nothing is swallowed while the loop is not armed', () => {
+  assert.equal(swallowKey({ running: false, key: 'Backspace', target: body }), false);
+});
+
+test('typing keeps every key, armed or not', () => {
+  for (const tagName of ['TEXTAREA', 'INPUT']) {
+    assert.equal(swallowKey({ running: true, key: 'Backspace', target: { tagName } }), false, tagName);
+    assert.equal(swallowKey({ running: true, key: ' ', target: { tagName } }), false, tagName);
+    assert.equal(swallowKey({ running: true, key: 'ArrowLeft', target: { tagName } }), false, tagName);
+  }
+  assert.equal(swallowKey({ running: true, key: 'Backspace', target: { isContentEditable: true } }), false);
+});
+
+test('an absent target is not a text field, so the swallow still applies', () => {
+  assert.equal(swallowKey({ running: true, key: 'Backspace', target: null }), true);
+});
+
+test('the macro editor keeps Backspace while the pad is armed', () => {
+  assert.equal(swallowKey({ running: true, key: 'Backspace', target: field }), false);
 });

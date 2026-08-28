@@ -10,7 +10,7 @@ import { GamepadController } from './gamepad-controller.js';
 import { PlayVmController } from './playvm-controller.js';
 import { createMacroHost } from './macro/host.js';
 import { $ } from './ui/dom.js';
-import { blurShouldStop } from './focus-guard.js';
+import { blurShouldStop, swallowKey } from './focus-guard.js';
 import { initTabs } from './ui/tabs.js';
 import { createCollisionGuard } from './collision.js';
 import { createHapticsMix } from './haptics-mix.js';
@@ -351,13 +351,10 @@ async function onConnect() {
   }
 }
 
-// Keep the browser out of the way while driving. On Android a gamepad also
-// emits key events (D-pad arrives as arrow keys), and those scroll the page —
-// so swallow them while the control loop is armed.
-const SWALLOW_KEYS = [' ', 'Spacebar', 'Enter', 'Backspace', 'Tab',
-  'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+// Keep the browser out of the way while driving, but never out of a typist's.
+// See docs/DESIGN-NOTES.md § The swallowed keys are the browser's, not the typist's
 window.addEventListener('keydown', (e) => {
-  if (gp.running && SWALLOW_KEYS.includes(e.key)) e.preventDefault();
+  if (swallowKey({ running: gp.running, key: e.key, target: e.target })) e.preventDefault();
 }, { passive: false });
 
 // Screen wake lock is dropped whenever the page hides, so it must be re-taken.
