@@ -688,39 +688,38 @@
 
       <section class="tabpanel" data-tab="macros" aria-label="Macros" hidden>
         <div class="panel" id="macro-editor">
-          <h2 class="lights-head">Macros</h2>
           <div class="macro-slot-row">
             <select id="macro-select" aria-label="Macro slot"></select>
             <button id="macro-new" type="button">New</button>
             <button id="macro-delete" type="button">Delete</button>
+            <button id="macro-export" type="button" class="macro-quiet">Export</button>
+            <button id="macro-import" type="button" class="macro-quiet">Import</button>
+            <input id="macro-import-file" type="file" accept="application/json" hidden />
           </div>
-          <textarea id="macro-source" spellcheck="false" rows="12"
-            aria-label="Macro source" placeholder="await drive(40, 0);
+
+          <div class="macro-work">
+            <div class="macro-main">
+              <div class="macro-bar">
+                <button id="macro-run" type="button" disabled>Run</button>
+                <button id="macro-stop" type="button" disabled>Stop</button>
+                <label><input id="macro-unsafe" type="checkbox" /> unsafe</label>
+                <output id="macro-elapsed">0.0s</output>
+              </div>
+              <textarea id="macro-source" spellcheck="false" rows="14"
+                aria-label="Macro source" placeholder="await drive(40, 0);
 await wait(500);
 await stopDrive();"></textarea>
-          <div class="macro-bar">
-            <button id="macro-run" type="button" disabled>Run</button>
-            <button id="macro-stop" type="button" disabled>Stop</button>
-            <label><input id="macro-unsafe" type="checkbox" /> unsafe</label>
-            <output id="macro-elapsed">0.0s</output>
+              <pre id="macro-status">idle</pre>
+            </div>
+
+            <aside class="macro-palette" aria-label="Commands">
+              <h2 class="lights-head">Insert a command</h2>
+              <input id="macro-search" type="search" placeholder="search commands"
+                aria-label="Search macro methods" autocomplete="off" spellcheck="false" />
+              <div class="macro-method-list" id="macro-method-list"></div>
+              <p class="macro-hidden" id="macro-hidden" role="status"></p>
+            </aside>
           </div>
-          <pre id="macro-status">idle</pre>
-        </div>
-        <div class="panel" id="macro-help">
-          <h2 class="lights-head">Methods</h2>
-          <div class="macro-examples" id="macro-examples"></div>
-          <input id="macro-search" type="search" placeholder="search methods"
-            aria-label="Search macro methods" autocomplete="off" spellcheck="false" />
-          <div class="macro-method-list" id="macro-method-list"></div>
-          <p class="macro-hidden" id="macro-hidden" role="status"></p>
-        </div>
-        <div class="panel">
-          <h2 class="lights-head">Import / export</h2>
-          <div class="probe-btns">
-            <button id="macro-export" type="button">Export</button>
-            <button id="macro-import" type="button">Import</button>
-          </div>
-          <input id="macro-import-file" type="file" accept="application/json" hidden />
         </div>
       </section>
 

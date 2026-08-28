@@ -5,11 +5,14 @@
 
 import { $ } from './dom.js';
 import { initMacroHelp } from './macro-help.js';
+import { EXAMPLES } from '../macro/api-docs.js';
 import { createMacroStore } from '../macro/store.js';
 import { SOURCE_LINE_OFFSET } from '../macro/rpc.js';
 
 const AUTOSAVE_DEBOUNCE_MS = 400;
 const ELAPSED_TICK_MS = 100;
+// Marks an option as one of the shipped samples rather than a stored slot.
+const SAMPLE_PREFIX = 'sample:';
 
 const formatElapsed = (ms) => (ms / 1000).toFixed(1) + 's';
 
@@ -55,6 +58,14 @@ export function initMacroPanel(hub) {
 
   const store = createMacroStore(localStorage);
 
+  // One writer for the status line: the tone is a class, and a later plain
+  // message has to clear it or a fixed error stays red forever.
+  const setStatus = (text, tone) => {
+    statusEl.textContent = text;
+    statusEl.classList.toggle('macro-bad', tone === 'bad');
+    statusEl.classList.toggle('macro-live', tone === 'live');
+  };
+
   let currentId = null;
   let autosaveTimer = 0;
   let running = false;
@@ -71,18 +82,62 @@ export function initMacroPanel(hub) {
     return store.list().find((m) => m.id === currentId) ?? null;
   }
 
+  const option = (value, label) => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    return opt;
+  };
+
+  // Saved slots and the shipped samples in one control. The samples used to be
+  // a row of buttons in a panel of their own, which put the two ways of opening
+  // a macro on opposite sides of the screen.
+  // See docs/DESIGN-NOTES.md § The macro palette is grouped, and sits beside the editor
   function renderSelect() {
     const macros = [...store.list()].sort((a, b) => a.name.localeCompare(b.name));
     select.replaceChildren();
-    for (const m of macros) {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = m.name;
-      select.append(opt);
+    if (!macros.length) {
+      select.append(option('', 'no macros yet — New, or copy a sample'));
+    } else {
+      const saved = document.createElement('optgroup');
+      saved.label = 'saved';
+      for (const m of macros) saved.append(option(m.id, m.name));
+      select.append(saved);
     }
+    const samples = document.createElement('optgroup');
+    samples.label = 'samples — opening one saves a copy';
+    for (const e of EXAMPLES) samples.append(option(`${SAMPLE_PREFIX}${e.name}`, e.name));
+    select.append(samples);
+
     if (currentId && macros.some((m) => m.id === currentId)) select.value = currentId;
     else currentId = macros[0]?.id ?? null;
-    if (currentId) select.value = currentId;
+    select.value = currentId ?? '';
+  }
+
+  // Opening a sample twice must not overwrite the copy that was edited the
+  // first time, and must not silently pick the old one either.
+  function uniqueName(base) {
+    const taken = new Set(store.list().map((m) => m.name));
+    if (!taken.has(base)) return base;
+    for (let n = 2; ; n++) if (!taken.has(`${base} ${n}`)) return `${base} ${n}`;
+  }
+
+  function copySample(name) {
+    const sample = EXAMPLES.find((e) => e.name === name);
+    if (!sample) { renderSelect(); return; }
+    try {
+      const saved = store.save({
+        name: uniqueName(sample.name), source: sample.source,
+        allowUnsafe: false, updatedAt: Date.now(),
+      });
+      currentId = saved.id;
+      renderSelect();
+      loadCurrent();
+      setStatus(`copied the ${sample.name} sample`);
+    } catch (err) {
+      renderSelect();
+      setStatus(`could not save: ${err.message}`, 'bad');
+    }
   }
 
   let help = null;
@@ -97,16 +152,25 @@ export function initMacroPanel(hub) {
     help?.render();   // the checkbox moved without firing `change`
   }
 
+  // store.save() throws when localStorage is full; this origin's quota is
+  // shared with the gamepad mapping. Autosave runs from a debounce timer and
+  // from every path that switches slots, so the refusal is caught here rather
+  // than at each of those call sites — one of them used to let it escape a
+  // click handler and the rest let it die in a timer, unseen.
   function persist() {
     if (!currentId) return;
     const existing = currentMacro();
-    store.save({
-      id: currentId,
-      name: existing?.name ?? 'untitled',
-      source: source.value,
-      allowUnsafe: unsafeBox.checked,
-      updatedAt: Date.now(),
-    });
+    try {
+      store.save({
+        id: currentId,
+        name: existing?.name ?? 'untitled',
+        source: source.value,
+        allowUnsafe: unsafeBox.checked,
+        updatedAt: Date.now(),
+      });
+    } catch (err) {
+      setStatus(`could not save: ${err.message}`, 'bad');
+    }
   }
 
   function scheduleAutosave() {
@@ -125,7 +189,9 @@ export function initMacroPanel(hub) {
 
   select.addEventListener('change', () => {
     flushAutosave();
-    currentId = select.value;
+    const picked = select.value;
+    if (picked.startsWith(SAMPLE_PREFIX)) { copySample(picked.slice(SAMPLE_PREFIX.length)); return; }
+    currentId = picked || null;
     loadCurrent();
   });
 
@@ -155,11 +221,11 @@ export function initMacroPanel(hub) {
     flushAutosave();
     persist();
     lastResult = null;
-    statusEl.textContent = 'starting…';
+    setStatus('starting…', 'live');
     // run() rejects on "already running" and on anything spawnWorker throws —
     // a blocked module worker, a CSP failure.
     hub.macro.run(source.value, { allowUnsafe: unsafeBox.checked })
-      .catch((err) => { statusEl.textContent = `error: ${err?.message ?? err}`; });
+      .catch((err) => setStatus(`error: ${err?.message ?? err}`, 'bad'));
   });
 
   // The reason is rendered as `stopped: …`, so it reads as the cause, not a sentence.
@@ -186,9 +252,9 @@ export function initMacroPanel(hub) {
       if (incoming.length) currentId = incoming[0].id;
       renderSelect();
       loadCurrent();
-      statusEl.textContent = `imported ${incoming.length} macro(s)`;
+      setStatus(`imported ${incoming.length} macro(s)`);
     } catch (err) {
-      statusEl.textContent = `import failed: ${err.message}`;
+      setStatus(`import failed: ${err.message}`, 'bad');
     }
   });
 
@@ -200,21 +266,21 @@ export function initMacroPanel(hub) {
 
   // A macro's own print() output — the status line's other tenant, alongside
   // the run-state text showState writes.
-  function showPrint(args) { statusEl.textContent = args.map(String).join(' '); }
+  function showPrint(args) { setStatus(args.map(String).join(' '), 'live'); }
 
   // The host's word on what a call is doing mid-run — an arming switch. Shares
   // the status line with showPrint and showState; the run stays `running`.
-  function showNotice(text) { statusEl.textContent = text; }
+  function showNotice(text) { setStatus(text, 'live'); }
 
   function showState(state, detail) {
     running = state === 'arming' || state === 'running' || state === 'stopping';
     paintButtons();
 
     if (state === 'arming') { lastResult = null; startedAt = Date.now(); showElapsed(0); }
-    if (state === 'running') statusEl.textContent = 'running';
-    if (state === 'stopping') statusEl.textContent = 'stopping…';
+    if (state === 'running') setStatus('running', 'live');
+    if (state === 'stopping') setStatus('stopping…', 'live');
     if (state === 'failed') lastResult = formatFailure(detail);
-    if (state === 'idle') statusEl.textContent = lastResult ?? formatEnd(detail);
+    if (state === 'idle') setStatus(lastResult ?? formatEnd(detail), lastResult ? 'bad' : undefined);
   }
 
   renderSelect();
@@ -223,21 +289,7 @@ export function initMacroPanel(hub) {
 
   // store.save() throws when localStorage is full; this origin's quota is
   // shared with the gamepad mapping.
-  help = initMacroHelp({
-    source, unsafeBox,
-    onInsert: scheduleAutosave,
-    onExample: (name, src) => {
-      try {
-        flushAutosave();
-        const saved = store.save({ name, source: src, allowUnsafe: false, updatedAt: Date.now() });
-        currentId = saved.id;
-        renderSelect();
-        loadCurrent();
-      } catch (err) {
-        statusEl.textContent = `could not save: ${err.message}`;
-      }
-    },
-  });
+  help = initMacroHelp({ source, unsafeBox, onInsert: scheduleAutosave });
   help.render();
 
   return { showState, showElapsed, showPrint, showNotice };

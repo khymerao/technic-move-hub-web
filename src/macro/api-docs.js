@@ -236,3 +236,27 @@ export const EXAMPLES = [
     ].join('\n'),
   },
 ];
+
+// The order and the headings the method palette renders. Grouping is a
+// property of the documentation, not of the API — the worker and the host read
+// api-spec.js and neither of them cares what a call is filed under.
+// See docs/DESIGN-NOTES.md § The macro palette is grouped, and sits beside the editor
+export const GROUPS = [
+  { id: 'driving', label: 'driving — combined frame', methods: ['drive', 'driveFor', 'stopDrive', 'lights'] },
+  { id: 'motors', label: 'motors — raw', methods: ['motorFor', 'throttleFor', 'tankFor', 'brake', 'brakeAll', 'coast'] },
+  { id: 'steering', label: 'steering', methods: ['steer', 'steerZero', 'steerPos'] },
+  { id: 'lights', label: 'lights', methods: ['lamps', 'led'] },
+  { id: 'sensors', label: 'sensors', methods: ['tilt', 'accel', 'battery', 'motorSpeed', 'motorPos', 'ports'] },
+  { id: 'timing', label: 'time and events', methods: ['wait', 'waitUntil', 'waitFor', 'mode'] },
+  { id: 'collision', label: 'collision', methods: ['collision', 'collisionThreshold'] },
+  { id: 'output', label: 'output', methods: ['print'] },
+  {
+    id: 'unsafe',
+    label: 'unsafe — documented hub-killers',
+    methods: [
+      'unsafe.raw', 'unsafe.writeDirect', 'unsafe.subscribe', 'unsafe.unsubscribe',
+      'unsafe.gotoPosition', 'unsafe.speedForDegrees',
+      'unsafe.linkDriveMotors', 'unsafe.unlinkDriveMotors',
+    ],
+  },
+];

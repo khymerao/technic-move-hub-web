@@ -993,12 +993,10 @@ test('macro help panel: search, insert at caret, examples, unsafe gating', async
   // or the first render filters on the query "0".
   search.value = '';
 
-  const made = [];
   let inserts = 0;
   const help = initMacroHelp({
     source, unsafeBox,
     onInsert: () => { inserts++; },
-    onExample: (name, src) => made.push([name, src]),
   });
   help.render();
 
@@ -1029,16 +1027,12 @@ test('macro help panel: search, insert at caret, examples, unsafe gating', async
   search.value = '';
   search.fire('input', { target: search });
   rows().find((r) => r.dataset.method === 'drive').fire('click');
-  assert.equal(source.value, 'Aawait drive(40, 0);B', 'the snippet lands at the caret');
+  assert.equal(source.value, 'A\nawait drive(40, 0);\nB',
+    'the snippet lands at the caret, on a line of its own');
   assert.equal(inserts, 1, 'insertion must tell the editor so autosave runs');
   // Focus left on the row means typing goes nowhere near the caret just set,
   // and Space — the next keystroke — inserts the snippet a second time.
   assert.equal(focused, 1, 'insertion must hand focus back to the editor');
-
-  // an example creates a slot rather than overwriting the editor
-  el('macro-examples').children[0].fire('click');
-  assert.equal(made.length, 1);
-  assert.ok(made[0][1].startsWith('//'), 'examples open with a comment explaining them');
 
   // render() reflects the checkbox even when nothing fired a change event —
   // loadCurrent() unticks it programmatically when a slot is loaded
@@ -1058,6 +1052,15 @@ test('macro help panel: search, insert at caret, examples, unsafe gating', async
 // A help panel built the way the app builds it: through initMacroPanel, with
 // no hand-called render() anywhere. Calling render() by hand proves only that
 // render() reads the checkbox, which was never the thing at risk.
+// Picking a sample is a `change` on the slot select, with the sample's option
+// value selected — the samples live in that control now, not in a row of
+// buttons of their own.
+// See docs/DESIGN-NOTES.md § The macro palette is grouped, and sits beside the editor
+function pickSample(select, name) {
+  select.value = `sample:${name}`;
+  select.fire('change', { target: select });
+}
+
 function seedMacroPanelDom(byId, macros, storeKey) {
   if (macros) localStorage.setItem(storeKey, JSON.stringify(macros));
   // El.value defaults to '0' (:22) and getElementById auto-creates, so an
@@ -1097,7 +1100,7 @@ test('macros panel: loading a slot re-renders the method list, not just the chec
   await new Promise((r) => setTimeout(r, 450)); // no timer left pending
 });
 
-test('macros panel: an example that cannot be saved says so instead of throwing', async () => {
+test('macros panel: a sample that cannot be saved says so instead of throwing', async () => {
   const byId = installDom();
   const { MACRO_STORE_KEY } = await import('../src/macro/store.js');
   const { initMacroPanel } = await import('../src/ui/macros.js');
@@ -1113,13 +1116,13 @@ test('macros panel: an example that cannot be saved says so instead of throwing'
   // … into a quota that has since filled up.
   localStorage.setItem = () => { throw new Error('QuotaExceededError'); };
 
-  el('macro-examples').children[0].fire('click');
+  pickSample(el('macro-select'), 'donut');
 
   assert.match(el('macro-status').textContent, /^could not save:/,
     'a full quota must reach the status line, not escape the click handler');
 });
 
-test('macros panel: an example lands in a new slot and leaves the open one alone', async () => {
+test('macros panel: a sample lands in a new slot and leaves the open one alone', async () => {
   const byId = installDom();
   const { createMacroStore } = await import('../src/macro/store.js');
   const { initMacroPanel } = await import('../src/ui/macros.js');
@@ -1132,13 +1135,13 @@ test('macros panel: an example lands in a new slot and leaves the open one alone
   el('macro-source').value = 'await led(3);';
   el('macro-source').fire('input', { target: el('macro-source') });
 
-  el('macro-examples').children[0].fire('click');
+  pickSample(el('macro-select'), 'donut');
 
-  assert.equal(store.list().length, 2, 'an example adds a slot, it does not overwrite one');
+  assert.equal(store.list().length, 2, 'a sample adds a slot, it does not overwrite one');
   assert.equal(store.list().find((m) => m.id === mine).source, 'await led(3);',
     'the edit in the open slot must survive the switch');
-  assert.notEqual(el('macro-select').value, mine, 'the example is the slot now on screen');
-  assert.ok(el('macro-source').value.startsWith('//'), 'the editor shows the example');
+  assert.notEqual(el('macro-select').value, mine, 'the sample is the slot now on screen');
+  assert.ok(el('macro-source').value.startsWith('//'), 'the editor shows the sample');
 
   await new Promise((r) => setTimeout(r, 450)); // no timer left pending
 });

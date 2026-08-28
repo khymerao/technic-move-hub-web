@@ -591,13 +591,33 @@ details[open] > summary { margin-bottom: 0.15rem; }
 /* ── Macros ──────────────────────────────────────────────────────────────
    The editor is the one free-text surface in the app: an unbroken line wraps
    inside the box rather than widening the page. */
-.macro-slot-row { display: flex; gap: var(--gap); flex-wrap: wrap; }
-.macro-slot-row select { flex: 1 1 10rem; }
-.macro-slot-row button { flex: 0 0 auto; }
+.macro-slot-row { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+.macro-slot-row select { flex: 1 1 14rem; }
+.macro-slot-row button { flex: 0 0 auto; padding: 0.5rem 0.7rem; font-size: 0.85rem; }
+/* Import and export are housekeeping, not part of writing a macro: same row,
+   quieter edge. They had a panel of their own and it read as a third feature. */
+.macro-slot-row .macro-quiet { border-color: var(--rule); opacity: 0.8; }
+.macro-slot-row .macro-quiet:hover { opacity: 1; }
+
+/* Editor and palette side by side once there is room for both. Below that the
+   palette follows the editor, which is the phone case and the default.
+   See docs/DESIGN-NOTES.md § The macro palette is grouped, and sits beside the editor */
+#macro-editor { container-type: inline-size; }
+.macro-work { display: grid; gap: var(--gap); align-items: start; }
+.macro-main { display: grid; gap: var(--row-gap); min-width: 0; }
+.macro-palette { display: grid; gap: 0.4rem; align-content: start; min-width: 0; }
+@container (min-width: 48rem) {
+  .macro-work { grid-template-columns: minmax(0, 1fr) 22rem; }
+  .macro-palette {
+    border-left: 1px solid var(--rule);
+    padding-left: var(--gap);
+  }
+  .macro-method-list { max-height: none; }
+}
 
 #macro-source {
   width: 100%;
-  min-height: 12rem;
+  min-height: 16rem;
   padding: 0.6rem 0.7rem;
   font-family: ui-monospace, monospace; font-size: 0.85rem; line-height: 1.5;
   /* Wraps rather than scrolling sideways — the one rule every surface in
@@ -608,21 +628,32 @@ details[open] > summary { margin-bottom: 0.15rem; }
   resize: vertical;
 }
 
-.macro-bar { display: flex; align-items: center; gap: var(--gap); flex-wrap: wrap; }
-.macro-bar button { flex: 1 1 6ch; min-height: var(--tap); padding: 0.5rem 0.6rem; font-size: 0.85rem; }
+/* Run first and widest: it is the only thing on this bar anyone came for.
+   Stop wears the danger colour while it can do something and nothing when it
+   cannot, so a disabled Stop does not read as an alarm. */
+.macro-bar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.macro-bar button { flex: 0 1 auto; min-height: var(--tap); padding: 0.5rem 1.1rem; font-size: 0.85rem; }
+.macro-bar #macro-run { flex: 1 1 8rem; font-weight: 600; }
+.macro-bar #macro-stop:not(:disabled) { color: var(--danger-text); border-color: currentColor; }
 .macro-bar label { flex: 0 0 auto; min-height: 0; }
 #macro-elapsed {
   flex: 1 1 5ch; text-align: right;
   font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums;
 }
 
-#macro-status { font-size: 0.8rem; overflow-wrap: anywhere; }
+#macro-status {
+  font-size: 0.8rem; overflow-wrap: anywhere;
+  border-left: 3px solid var(--line); padding-left: 0.5rem;
+}
+/* The tone is the left edge, not the text: a red sentence in a mono block reads
+   as part of the macro's own output. */
+#macro-status.macro-live { border-left-color: var(--accent-edge); }
+#macro-status.macro-bad { border-left-color: var(--danger-text); }
 
 /* Safari draws type="search" as a rounded native field unless the appearance
    is dropped, which the rule above cannot override on its own. */
 #macro-search { width: 100%; -webkit-appearance: none; appearance: none; }
 
-.macro-examples { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
 
 .macro-method-list {
   display: flex;
@@ -630,8 +661,19 @@ details[open] > summary { margin-bottom: 0.15rem; }
   gap: 2px;
   max-height: 40vh;
   overflow-y: auto;
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
+
+/* A heading inside the list, not above it: the groups scroll with their rows.
+   See docs/DESIGN-NOTES.md § The macro palette is grouped, and sits beside the editor */
+.macro-group {
+  margin: 0.6rem 0 0.1rem;
+  position: sticky; top: 0;
+  background: var(--paper);
+  padding: 0.15rem 0.4rem;
+  flex-shrink: 0;
+}
+.macro-group:first-child { margin-top: 0; }
 
 .macro-method {
   display: flex;
@@ -639,6 +681,7 @@ details[open] > summary { margin-bottom: 0.15rem; }
   gap: 0.5rem;
   flex-wrap: wrap;
   text-align: left;
+  border-radius: var(--radius);
   /* A row of a long list, not a control: the global 44px tap height and
      border would make 27 of them ~1240px inside a 40vh box. */
   min-height: 0;
@@ -650,6 +693,7 @@ details[open] > summary { margin-bottom: 0.15rem; }
   flex-shrink: 0;
 }
 
+.macro-method:hover { background: var(--sunken); }
 .macro-method code { font-size: 0.85rem; overflow-wrap: anywhere; }
 .macro-hint { opacity: 0.65; font-size: 0.8rem; }
 

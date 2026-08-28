@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DOCS, EXAMPLES } from '../src/macro/api-docs.js';
-import { METHOD_NAMES } from '../src/macro/api-spec.js';
+import { DOCS, EXAMPLES, GROUPS } from '../src/macro/api-docs.js';
+import { METHOD_NAMES, isUnsafe } from '../src/macro/api-spec.js';
 
 test('every method has an entry, and every entry is a method', () => {
   assert.deepEqual(Object.keys(DOCS).sort(), [...METHOD_NAMES].sort());
@@ -76,4 +76,31 @@ test('the delta-gated sensor hints say the reading may never arrive', () => {
 // default 'abort', so the snippet alone always throws.
 test("waitFor's hint names the call that makes it work", () => {
   assert.match(DOCS.waitFor.hint, /collision\(/);
+});
+
+// The palette renders GROUPS, not METHOD_NAMES: a method missing from every
+// group would simply never be offered, and nothing else would notice.
+// See docs/DESIGN-NOTES.md § The macro palette is grouped, and sits beside the editor
+test('the groups cover every method exactly once', () => {
+  const listed = GROUPS.flatMap((g) => g.methods);
+  assert.deepEqual([...listed].sort(), [...METHOD_NAMES].sort());
+  assert.equal(new Set(listed).size, listed.length, 'a method is filed under one group');
+});
+
+test('every group has an id and a heading', () => {
+  const ids = new Set();
+  for (const g of GROUPS) {
+    assert.ok(g.id?.length, 'a group has no id');
+    assert.ok(g.label?.length, `${g.id} has no label`);
+    assert.ok(!ids.has(g.id), `${g.id} is listed twice`);
+    ids.add(g.id);
+  }
+});
+
+// Ticking `unsafe` is what reveals them, so they must not be scattered through
+// the safe groups where the checkbox would leave holes in every heading.
+test('the unsafe methods are one group of their own', () => {
+  const unsafeGroups = GROUPS.filter((g) => g.methods.some(isUnsafe));
+  assert.equal(unsafeGroups.length, 1);
+  assert.ok(unsafeGroups[0].methods.every(isUnsafe), 'nothing safe hides in the unsafe group');
 });
