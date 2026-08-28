@@ -1,8 +1,8 @@
 // Gamepad panel: arm/disarm the control loop, tuning, and the remap table.
 
 import { $, setToggle, rangeControl } from './dom.js';
-import { resetMap } from '../gamepad-controller.js';
-import { ACTIONS, sourceLabel } from '../gamepad-map.js';
+import { loadMap, resetMap, saveMap } from '../gamepad-controller.js';
+import { initMapper } from './gamepad-mapper.js';
 import { log } from '../debug-log.js';
 
 // onRunChange fires whenever the user arms or disarms the loop, so the app can
@@ -79,34 +79,26 @@ export function initGamepadPanel(hub, { onRunChange } = {}) {
     if (hub.gamepad) hub.gamepad.params.rampMode = e.target.value;
   });
 
-  // Mapping table: tap a row, then press the control to bind it.
-  function renderMapping() {
-    if (!gpMap || !hub.gamepad) return;
-    gpMap.replaceChildren();
-    for (const action of ACTIONS) {
-      const b = hub.gamepad.map[action.id];
-      const shown = action.kind === 'pair'
-        ? `${sourceLabel(b?.pos)} / ${sourceLabel(b?.neg)}`
-        : sourceLabel(b);
-      const row = document.createElement('button');
-      row.type = 'button';
-      row.className = 'map-row' + (hub.gamepad.learning === action.id ? ' learning' : '');
-      row.textContent = hub.gamepad.learning === action.id
-        ? `${action.label}: … press a control`
-        : `${action.label}: ${shown}`;
-      row.addEventListener('click', () => {
-        if (hub.gamepad.learning === action.id) hub.gamepad.cancelLearning();
-        else hub.gamepad.startLearning(action.id);
-        renderMapping();
-      });
-      gpMap.append(row);
-    }
-  }
+  // The map is drawn on a picture of the pad, one slot per physical control.
+  // It lives without a controller: the map is in localStorage either way, so
+  // the panel can be read and edited before anything is connected.
+  // See docs/DESIGN-NOTES.md § The mapping panel names controls, not indices
+  let held = loadMap();
+  const mapper = gpMap && initMapper(gpMap, {
+    getMap: () => hub.gamepad?.map ?? held,
+    setMap: (next) => {
+      held = next;
+      if (hub.gamepad) hub.gamepad.map = next;
+      else saveMap(next);
+    },
+    mode: gpDriveMode?.value,
+  });
+  const renderMapping = () => mapper?.refresh();
 
   $('gp-reset').addEventListener('click', () => {
-    if (!hub.gamepad) return;
-    hub.gamepad.map = resetMap();
-    renderMapping();
+    held = resetMap();
+    if (hub.gamepad) hub.gamepad.map = held;
+    mapper?.refresh();
   });
 
   // Called by main once hub.gamepad exists — the panel is built before the

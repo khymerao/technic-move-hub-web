@@ -465,17 +465,129 @@ details[open] > summary { margin-bottom: 0.15rem; }
 
 #gp-live { font-size: 0.75rem; }
 #gp-map { display: grid; gap: 0.4rem; }
-.map-row {
-  text-align: left; font-size: 0.8rem;
-  padding: 0.5rem 0.7rem; min-height: var(--tap);
-  overflow-wrap: anywhere;
+/* The mapping panel: a picture of the pad, one slot per physical control.
+   See docs/DESIGN-NOTES.md § The mapping panel names controls, not indices */
+.pmap { display: grid; gap: var(--row-gap); container-type: inline-size; }
+/* The map earns the room: its panel takes the whole row, which is the only way
+   the drawing and both slot columns fit side by side. */
+.tabpanel > .panel:has(> #gp-map) { grid-column: 1 / -1; }
+.pmap-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+.pmap-pad { font-size: 0.72rem; color: var(--ink-soft); overflow-wrap: anywhere; }
+.pmap-badge {
+  font: 700 0.6rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.2rem 0.45rem; border: 1px solid var(--accent-edge); border-radius: var(--radius);
+  background: var(--accent); color: var(--accent-ink); white-space: nowrap;
 }
-/* Learning is a transient prompt, not an engaged toggle, so it borrows the
-   accent fill but keeps its own class. */
-.map-row.learning {
-  background: var(--accent); color: var(--accent-ink);
-  border-color: var(--accent-edge);
+.pmap-mode { display: grid; gap: 0.3rem; }
+
+/* The drawing's own palette. One control lights, and its lettering flips with
+   it, so a lit button stays readable. */
+.pmap { --pad-body: var(--ink); --pad-trim: var(--ink-soft); --pad-hi: var(--paper); }
+.pmap-art { width: 100%; height: auto; display: block; }
+.ctl { cursor: pointer; }
+.ctl path { transition: fill 120ms ease-out; }
+.ctl.on path { fill: var(--accent); }
+.ctl.on path[fill="var(--pad-hi)"] { fill: var(--accent-ink); }
+.ctl.on { animation: ctl-thump 420ms ease-out; transform-box: fill-box; transform-origin: center; }
+@keyframes ctl-thump {
+  0% { transform: scale(1); } 30% { transform: scale(1.14); } 100% { transform: scale(1); }
 }
+
+.pmap-stage { display: grid; gap: var(--gap); }
+/* The wires only mean anything next to the drawing, which only happens on the
+   wide layout. */
+.pmap-wires { display: none; }
+.pmap-slots { display: grid; gap: 0.4rem; }
+
+.map-slot {
+  display: flex; align-items: stretch; gap: 0; padding: 0; overflow: hidden;
+  min-height: var(--tap); text-align: left;
+  border: 1px solid var(--rule); border-radius: var(--radius);
+}
+.map-slot .chip {
+  flex: none; width: 3.2rem; display: grid; place-items: center;
+  font: 700 0.72rem var(--mono);
+  background: var(--ink); color: var(--paper);
+}
+.map-slot-body {
+  flex: 1 1 auto; min-width: 0;
+  display: flex; flex-direction: column; justify-content: center; gap: 0.1rem;
+  padding: 0.35rem 0.6rem;
+}
+.map-slot-action { font-size: 0.78rem; overflow-wrap: anywhere; }
+.map-slot-kind {
+  font: 400 0.6rem var(--mono); letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+/* The slot is one line of each on the wide layout, where its height is fixed by
+   the row it sits on. The full text is the button's title either way. */
+@container (min-width: 1100px) {
+  .map-slot-action, .map-slot-kind { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+.map-slot.empty { border-style: dashed; }
+.map-slot.empty .map-slot-action { color: var(--ink-soft); }
+/* Kept, not dropped: a binding another drive mode uses is still the driver's. */
+.map-slot.idle { opacity: 0.45; }
+.map-slot.live { background: var(--accent); border-color: var(--accent-edge); color: var(--accent-ink); }
+.map-slot.live .chip { background: var(--accent-edge); color: var(--accent-ink); }
+.map-slot.live .map-slot-kind { color: var(--accent-ink); }
+.map-slot.picking { outline: 3px solid var(--focus); outline-offset: 2px; }
+/* A modifier holds a whole layer and commands nothing itself, so it reads as a
+   different kind of thing rather than as another binding.
+   See docs/DESIGN-NOTES.md § A modifier is a held button, not a mode */
+.map-slot.mod { border-style: solid; border-color: var(--ink); }
+.map-slot.mod .chip { background: var(--accent-edge); color: var(--accent-ink); }
+.map-slot.mod .map-slot-action { font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.68rem; }
+.pmap-mod[aria-pressed="true"], .pmap-mod.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-edge); }
+
+.pmap-picker {
+  width: min(30rem, 92vw); max-height: 80vh; padding: 0;
+  /* Column, so the list is the part that scrolls and the footer stays put. */
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.pmap-picker:not([open]) { display: none; }
+.pmap-picker::backdrop { background: rgba(22, 21, 15, 0.45); }
+.pmap-picker-head { display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.8rem; border-bottom: 1px solid var(--rule); }
+.pmap-picker-head .chip {
+  flex: none; min-width: 2.8rem; padding: 0.25rem 0.4rem; display: grid; place-items: center;
+  font: 700 0.72rem var(--mono); background: var(--ink); color: var(--paper); border-radius: 2px;
+}
+.pmap-picker-title { font-size: 0.8rem; }
+.pmap-picker-head, .pmap-picker-foot { flex: none; }
+.pmap-picker-list { flex: 1 1 auto; padding: 0.4rem; display: grid; gap: 0.2rem; align-content: start; overflow-y: auto; overflow-x: hidden; }
+.pmap-picker-foot { display: flex; gap: 0.5rem; padding: 0.6rem 0.8rem; border-top: 1px solid var(--rule); }
+.pmap-picker-foot button { flex: 1 1 auto; font-size: 0.78rem; padding: 0.5rem 0.7rem; }
+.pmap-clear { color: var(--danger-text); }
+.pmap-opt {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+  min-height: var(--tap); padding: 0.4rem 0.6rem; text-align: left;
+  font-size: 0.78rem; border-color: transparent;
+}
+.pmap-opt:hover { background: var(--sunken); }
+/* Where an action already sits, so moving it is a decision and not a surprise. */
+.pmap-opt.taken { color: var(--ink-soft); }
+.pmap-opt.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent-edge); }
+.pmap-where { flex: none; font: 400 0.6rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: inherit; opacity: 0.75; }
+
+/* Wide enough for the drawing with a column of slots either side of it. On the
+   PANEL, not the viewport: this panel sits in a column of a dashboard, so a
+   wide window says nothing about the room it actually has — and a stage wider
+   than its column is exactly the sideways scroll the whole layout is written to
+   prevent. Below this the slots are a list under the picture, which is the
+   phone case and the default. */
+@container (min-width: 1100px) {
+  .pmap-stage { position: relative; width: 1100px; height: 560px; margin: 0 auto; display: block; }
+  .pmap-art { position: absolute; left: var(--art-x); top: var(--art-y); width: var(--art-w); height: var(--art-h); }
+  .pmap-wires { display: block; position: absolute; inset: 0; width: 1100px; height: 560px; }
+  .pmap-wire { fill: none; stroke: var(--rule); stroke-width: 1.5; }
+  .pmap-wire.empty { stroke-dasharray: 3 4; }
+  .pmap-wire.live { stroke: var(--accent-edge); stroke-width: 2.5; }
+  .pmap-dot { fill: var(--rule); }
+  .pmap-dot.live { fill: var(--accent-edge); }
+  .pmap-slots { display: contents; }
+  .map-slot { position: absolute; left: var(--sx); top: var(--sy); width: 210px; height: 48px; min-height: 0; }
+}
+
 
 #debug { display: grid; gap: 0.5rem; }
 .debug-bar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }

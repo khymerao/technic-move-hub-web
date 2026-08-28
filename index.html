@@ -148,6 +148,7 @@
   <nav id="tabbar" hidden aria-label="Sections">
     <button type="button" data-go="drive" class="on" aria-current="true">Drive</button>
     <button type="button" data-go="setup">Setup</button>
+    <button type="button" data-go="mapping">Mapping</button>
     <button type="button" data-go="lights">Lights</button>
     <button type="button" data-go="hub">Hub</button>
     <button type="button" data-go="motion">Motion</button>
@@ -594,11 +595,6 @@
             <option value="instant">instant</option>
           </select></label>
           <label>accel rate <input id="gp-ramp-rate" type="range" min="60" max="600" step="20" value="220" /><output id="gp-ramp-rate-out">220</output></label>
-          <details>
-            <summary>Button mapping</summary>
-            <div id="gp-map"></div>
-            <button id="gp-reset" type="button">Reset to defaults</button>
-          </details>
         </div>
         <div class="panel">
           <h2 class="lights-head">Haptics</h2>
@@ -608,6 +604,14 @@
           <label>bed <input id="hap-weak" type="range" min="0" max="100" step="5" value="50" /><output id="hap-weak-out">50</output></label>
           <button id="hap-test" type="button">Test rumble</button>
           <pre id="hap-status">haptics: off</pre>
+        </div>
+      </section>
+
+      <section class="tabpanel" data-tab="mapping" aria-label="Mapping" hidden>
+        <div class="panel">
+          <h2 class="lights-head">Button mapping</h2>
+          <div id="gp-map"></div>
+          <button id="gp-reset" type="button">Reset to defaults</button>
         </div>
       </section>
 

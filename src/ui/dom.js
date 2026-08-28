@@ -32,3 +32,44 @@ export function rangeControl(id, { scale = (v) => v, format = String, apply } = 
   paint();
   return input;
 }
+
+// Value-keyed DOM writes: each helper remembers what it last put on that
+// element for that property and skips a write that would change nothing.
+//
+// Gating here rather than in the panels is what makes it correct. The panels'
+// paint functions are not pure functions of the frame — the dial also reads the
+// position stream, the measured toggle and the steering mode — so a memo keyed
+// on the incoming frame would freeze the dial against everything else that
+// moves it. Keyed on the value actually written, every writer shares one memo
+// and none of them can leave it stale: the out-of-band status messages, the
+// mode cluster and the link-lost reset all go through the same door.
+//
+// See docs/DESIGN-NOTES.md § The panels write what changed, and nothing else
+const written = new WeakMap();
+
+const changed = (el, key, value) => {
+  let seen = written.get(el);
+  if (!seen) { seen = new Map(); written.set(el, seen); }
+  if (seen.has(key) && Object.is(seen.get(key), value)) return false;
+  seen.set(key, value);
+  return true;
+};
+
+export function setText(el, value) {
+  if (!el) return;
+  const v = String(value);
+  if (changed(el, 'text', v)) el.textContent = v;
+}
+
+
+export function setAttr(el, name, value) {
+  if (!el) return;
+  const v = String(value);
+  if (changed(el, `attr:${name}`, v)) el.setAttribute(name, v);
+}
+
+
+export function setClass(el, name, on) {
+  if (!el) return;
+  if (changed(el, `class:${name}`, !!on)) el.classList.toggle(name, !!on);
+}

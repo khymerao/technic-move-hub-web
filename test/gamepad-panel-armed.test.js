@@ -18,6 +18,10 @@ class El {
   constructor() {
     this.textContent = '';
     this.value = '0';
+    this.dataset = {};
+    this.innerHTML = '';
+    this.attrs = new Map();
+    this.style = { _p: new Map(), setProperty(n, v) { this._p.set(n, String(v)); }, getPropertyValue(n) { return this._p.get(n) ?? ''; }, removeProperty(n) { this._p.delete(n); } };
     this._events = new Map();
     this.classList = {
       _s: new Set(),
@@ -29,6 +33,11 @@ class El {
   }
   append() {}
   replaceChildren() {}
+  // The mapping panel draws the pad as inline SVG: attributes, custom
+  // properties and a group lookup, none of which a bare stub answers.
+  setAttribute(name, value) { this.attrs.set(name, String(value)); }
+  getAttribute(name) { return this.attrs.get(name) ?? null; }
+  querySelectorAll() { return []; }
   addEventListener(type, fn) { this._events.set(type, fn); }
   removeEventListener(type) { this._events.delete(type); }
   fire(type, ev = {}) {
@@ -63,6 +72,7 @@ async function setup() {
   const byId = new Map();
   globalThis.document = {
     createElement: () => new El(),
+    createElementNS: () => new El(),
     getElementById: (id) => {
       if (!byId.has(id)) byId.set(id, new El());
       return byId.get(id);

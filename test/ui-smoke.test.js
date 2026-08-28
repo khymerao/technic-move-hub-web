@@ -88,6 +88,7 @@ function installDom() {
   const byId = new Map();
   globalThis.document = {
     createElement: (tag) => new El(tag),
+    createElementNS: (ns, tag) => new El(tag),
     getElementById: (id) => {
       if (!byId.has(id)) byId.set(id, new El(id.includes('btn') ? 'button' : 'div'));
       return byId.get(id);
