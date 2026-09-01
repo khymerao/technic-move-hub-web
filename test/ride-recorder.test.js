@@ -42,23 +42,28 @@ test('an identical frame is not stored twice', () => {
   assert.deepEqual(ride.frames.map((f) => f.speed), [40, 55]);
 });
 
-test('the tracked mode converts to speed and steer around the midpoint', () => {
+// A tracked build has no steering rack. Recording it as speed-and-steer meant
+// replaying it through the combined frame, which sweeps a rack that is not
+// there — so the tank frame is recorded, and replayed, as a tank frame.
+test('the tracked mode records the tank frame it was driven with', () => {
   const g = rig();
   g.r.start();
   g.at(60).observe(state({ driveMode: 'tracked', sent: { tankL: 80, tankR: 20 } }));
   const ride = g.at(120).r.stop('user');
-  assert.equal(ride.path, 'playvm');
-  assert.deepEqual(ride.frames[0], { t: 60, speed: 50, steer: 30 });
+  assert.equal(ride.path, 'tank');
+  assert.deepEqual(ride.frames[0], { t: 60, left: 80, right: 20 });
 });
 
-test('a live steer stick beats the reconstructed tank differential', () => {
+test('a steer stick does not turn a tracked ride back into a rack angle', () => {
   const g = rig();
   g.r.start();
   g.at(60).observe(state({
     driveMode: 'tracked', steer: -70, sent: { tankL: 80, tankR: 20, steer: -70 },
   }));
   const ride = g.at(120).r.stop('user');
-  assert.equal(ride.frames[0].steer, -70);
+  assert.equal(ride.path, 'tank');
+  assert.deepEqual(ride.frames[0], { t: 60, left: 80, right: 20 });
+  assert.equal(ride.frames[0].steer, undefined);
 });
 
 test('linked mode takes the drive value straight', () => {

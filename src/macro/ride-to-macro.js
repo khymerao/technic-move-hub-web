@@ -113,6 +113,8 @@ function describe(seg, frames, keys, epsFor, path, epsilon) {
   let kind;
   if (path === 'tank') {
     if (value.left === 0 && value.right === 0) kind = 'stop';
+    // Tracks pulling against each other turn the machine without moving it.
+    else if (value.left * value.right < 0) kind = 'spin';
     else kind = Math.abs(value.left - value.right) <= 2 * epsFor('left') ? 'straight' : 'arc';
   } else if (value.speed === 0) kind = 'stop';
   else kind = Math.abs(value.steer) <= epsilon.steer ? 'straight' : 'arc';
@@ -151,6 +153,7 @@ const sideOf = (seg, path) => {
 function comment(seg, ride, path, chunkMs) {
   const parts = [];
   if (seg.kind === 'stop') parts.push('stopped');
+  else if (seg.kind === 'spin') parts.push(`spin ${sideOf(seg, path)}`);
   else if (seg.kind === 'arc') parts.push(`arc ${sideOf(seg, path)}`);
   else parts.push('straight');
   parts.push(seconds(chunkMs));
@@ -160,7 +163,7 @@ function comment(seg, ride, path, chunkMs) {
     parts.push(`you drove ${seg.ramp.from}→${seg.ramp.to}, flattened to ${value} (±${half})`);
   }
   parts.push(...telemetryNotes(ride, seg));
-  if (seg.kind === 'arc') parts.push(DRIFT_NOTE);
+  if (seg.kind === 'arc' || seg.kind === 'spin') parts.push(DRIFT_NOTE);
   return parts.join(' · ');
 }
 
@@ -202,7 +205,7 @@ function header(ride, path, segments) {
       : '// no telemetry was live — turn on Telemetry, or record with the Drive tab open',
   ];
   if (ride.sourceMode === 'tracked') {
-    lines.push('// steering reconstructed from the tank differential, k = 1');
+    lines.push('// tank steering: the two tracks are driven separately, as they were recorded');
   }
   if (ride.sourceMode === 'independent') {
     lines.push('// independent mode is not a chassis model — emitted on the raw path as tankFor');
@@ -230,8 +233,8 @@ export function rideToMacro(ride, { epsilon, trimLeadingStillness = false } = {}
   const segments = raw.map((seg) => describe(seg, frames, keys, epsFor, path, eps));
 
   if (ride.sourceMode === 'tracked') {
-    warnings.push('steering was reconstructed from a tank differential; the recovered '
-      + 'value is a counter-rotation, not a rack angle');
+    warnings.push('a tank ride replays on the raw path, which has no device-side '
+      + 'failsafe of its own — every command carries a deadline instead');
   }
   if (ride.sourceMode === 'independent') {
     warnings.push('independent mode was emitted on the raw path, off the canonical '

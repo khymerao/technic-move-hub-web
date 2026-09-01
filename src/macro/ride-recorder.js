@@ -6,7 +6,7 @@
 export const RECORD_CAP_MS = 600000;
 
 const MODE_PATH = {
-  playvm: 'playvm', tracked: 'playvm', linked: 'playvm', independent: 'tank',
+  playvm: 'playvm', tracked: 'tank', linked: 'playvm', independent: 'tank',
 };
 
 function frameFor(mode, sent, steerStick) {
@@ -14,12 +14,7 @@ function frameFor(mode, sent, steerStick) {
     return { left: sent.driveA ?? 0, right: sent.driveB ?? 0 };
   }
   if (mode === 'tracked') {
-    const L = sent.tankL ?? 0, R = sent.tankR ?? 0;
-    const stick = sent.steer ?? steerStick;
-    return {
-      speed: Math.round((L + R) / 2),
-      steer: Number.isFinite(stick) && stick !== 0 ? Math.round(stick) : Math.round((L - R) / 2),
-    };
+    return { left: Math.round(sent.tankL ?? 0), right: Math.round(sent.tankR ?? 0) };
   }
   if (mode === 'linked') {
     return { speed: Math.round(sent.driveA ?? 0), steer: Math.round(sent.steer ?? steerStick ?? 0) };

@@ -140,9 +140,14 @@ test('the independent path emits tankFor on the raw path', () => {
   assert.match(source, /independent/i);
 });
 
-test('the tracked source declares its reconstruction factor', () => {
-  const { source } = rideToMacro(ride([{ t: 0, speed: 50, steer: 30 }], { sourceMode: 'tracked' }));
-  assert.match(source, /k = 1/);
+test('a tracked ride is emitted as tank frames, never through the combined frame', () => {
+  const r = ride([{ t: 0, left: 80, right: 20 }, { t: 1000, left: 0, right: 0 }],
+    { path: 'tank', sourceMode: 'tracked' });
+  const { source } = rideToMacro(r);
+  assert.match(source, /await tankFor\(80, 20, \d+\);/);
+  assert.doesNotMatch(source, /mode\('playvm'\)/);
+  assert.doesNotMatch(source, /k = 1/);
+  assert.match(source, /tank steering/i);
 });
 
 test('the settings that the conversion depends on are named', () => {
@@ -202,4 +207,31 @@ test('a segment with no sample at all reports nothing rather than a zero', () =>
   }));
   const arc = source.split('\n').find((l) => l.includes('arc left'));
   assert.doesNotMatch(arc, /yaw/);
+});
+
+// On a tank the two tracks turning against each other is a spin in place, not
+// an arc: calling it an arc tells the reader the machine travelled while it
+// turned, which is the one thing it did not do.
+test('counter-rotating tracks read as a spin, not an arc', () => {
+  const r = ride([{ t: 0, left: 80, right: -80 }, { t: 900, left: 0, right: 0 }],
+    { path: 'tank', sourceMode: 'tracked' });
+  const { source, segments } = rideToMacro(r);
+  const spin = segments.find((s) => s.kind === 'spin');
+  assert.ok(spin, 'a counter-rotation was not classified as a spin');
+  assert.match(source, /spin right/);
+  assert.doesNotMatch(source, /arc/);
+});
+
+test('a spin still carries the drift warning a turn deserves', () => {
+  const { source } = rideToMacro(ride([{ t: 0, left: 70, right: -70 }, { t: 900, left: 0, right: 0 }],
+    { path: 'tank', sourceMode: 'tracked' }));
+  const spinLine = source.split('\n').find((l) => l.includes('spin'));
+  assert.match(spinLine, /drift/i);
+});
+
+test('tracks at different speeds but the same direction are still an arc', () => {
+  const { source } = rideToMacro(ride([{ t: 0, left: 80, right: 30 }, { t: 900, left: 0, right: 0 }],
+    { path: 'tank', sourceMode: 'tracked' }));
+  assert.match(source, /arc right/);
+  assert.doesNotMatch(source, /spin/);
 });
