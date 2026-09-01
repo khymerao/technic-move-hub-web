@@ -169,15 +169,36 @@ function comment(seg, ride, path, chunkMs) {
 
 const line = (code, note) => `${code.padEnd(CODE_COLUMN)}  // ${note}`;
 
+// The command and the time it lasts are emitted separately, and that is the
+// whole point: `driveFor` releases its hold when it returns, so a ride cut into
+// eight segments replayed as eight accelerate-and-stop cycles and came up
+// short. A hold plus a wait keeps the motors turning across the seam.
+// `tankFor` has the opposite problem — it arms a deadline and returns at once,
+// never sleeping — so its duration has to be a wait too, or the whole ride
+// collapses into the last command.
+// See docs/DESIGN-NOTES.md § A replayed ride is held, not restarted
 function callFor(seg, path, ms) {
-  if (seg.kind === 'stop') return `await wait(${ms});`;
+  if (seg.kind === 'stop') return null;
   if (path === 'tank') return `await tankFor(${seg.left}, ${seg.right}, ${ms});`;
-  return `await driveFor(${seg.speed}, ${seg.steer}, ${ms});`;
+  return `await drive(${seg.speed}, ${seg.steer});`;
 }
 
-function emitSegment(seg, ride, path, warnings) {
+function emitSegment(seg, ride, path, warnings, prev) {
   const lines = [];
   const total = roundMs(seg.durationMs);
+
+  if (seg.kind === 'stop') {
+    // Only worth releasing if something was still holding the motors.
+    if (prev && prev.kind !== 'stop') {
+      lines.push(line(path === 'tank' ? 'await brakeAll();' : 'await stopDrive();',
+        comment(seg, ride, path, total)));
+      lines.push(`await wait(${total});`);
+    } else {
+      lines.push(line(`await wait(${total});`, comment(seg, ride, path, total)));
+    }
+    return lines;
+  }
+
   let left = total;
   if (left > MAX_COMMAND_MS) {
     warnings.push(
@@ -187,6 +208,7 @@ function emitSegment(seg, ride, path, warnings) {
   while (left > 0) {
     const ms = Math.min(left, MAX_COMMAND_MS);
     lines.push(line(callFor(seg, path, ms), comment(seg, ride, path, ms)));
+    lines.push(`await wait(${ms});`);
     left -= ms;
   }
   return lines;
@@ -242,14 +264,15 @@ export function rideToMacro(ride, { epsilon, trimLeadingStillness = false } = {}
   }
 
   const body = [];
-  for (const seg of segments) body.push(...emitSegment(seg, ride, path, warnings));
+  segments.forEach((seg, i) => body.push(...emitSegment(seg, ride, path, warnings, segments[i - 1])));
 
   const source = [
     ...header(ride, path, segments),
     '',
     ...(path === 'tank' ? [] : ["await mode('playvm');"]),
     ...body,
-    path === 'tank' ? 'await brakeAll();' : 'await stopDrive();',
+    ...(segments[segments.length - 1]?.kind === 'stop' ? []
+      : [path === 'tank' ? 'await brakeAll();' : 'await stopDrive();']),
     '',
   ].join('\n');
 

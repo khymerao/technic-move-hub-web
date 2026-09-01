@@ -73,7 +73,7 @@ test('a zero segment becomes a wait, not a drive', () => {
 
 test('a steered segment reads as an arc and names its side', () => {
   const { source } = rideToMacro(ride([{ t: 0, speed: 40, steer: -60 }]));
-  assert.match(source, /await driveFor\(40, -60, \d+\);/);
+  assert.match(source, /await drive\(40, -60\);/);
   assert.match(source, /arc left/);
 });
 
@@ -87,14 +87,15 @@ test('the preamble forces the mode and the tail stops the car', () => {
 test('a segment past the command ceiling is chunked and warned about', () => {
   const frames = [{ t: 0, speed: 40, steer: 0 }, { t: 25000, speed: 40, steer: 0 }];
   const { source, warnings } = rideToMacro(ride(frames));
-  const drives = source.split('\n').filter((l) => l.includes('driveFor'));
+  const drives = source.split('\n').filter((l) => l.includes('await drive('));
   assert.ok(drives.length >= 3);
   assert.ok(warnings.some((w) => /10000|ceiling|chunk/i.test(w)));
 });
 
 test('durations round to the link floor, not to the millisecond', () => {
   const { source } = rideToMacro(ride([{ t: 0, speed: 40, steer: 0 }, { t: 1237, speed: 0, steer: 0 }]));
-  assert.match(source, /await driveFor\(40, 0, 1250\);/);
+  assert.match(source, /await drive\(40, 0\);/);
+  assert.match(source, /await wait\(1250\);/);
 });
 
 test('the header is local time and never an ISO string', () => {
@@ -234,4 +235,52 @@ test('tracks at different speeds but the same direction are still an arc', () =>
     { path: 'tank', sourceMode: 'tracked' }));
   assert.match(source, /arc right/);
   assert.doesNotMatch(source, /spin/);
+});
+
+// The recorded ride was continuous; the replay has to be too. `driveFor` holds,
+// sleeps, then RELEASES — so a ride cut into eight segments became eight
+// accelerate-and-stop cycles, and the car covered visibly less ground than it
+// had when it was driven.
+test('consecutive motion segments do not stop the car between them', () => {
+  const { source } = rideToMacro(ride([
+    { t: 0, speed: 40, steer: 0 },
+    { t: 900, speed: 80, steer: 0 },
+    { t: 1800, speed: 80, steer: -40 },
+  ]));
+  const motion = source.split('\n').filter((l) => l.startsWith('await') && !l.includes('mode('));
+  const stops = motion.filter((l) => l.includes('stopDrive'));
+  assert.equal(stops.length, 1, 'the car is stopped more than once — only the tail may stop it');
+  assert.ok(source.trimEnd().endsWith('await stopDrive();'), 'the tail does not stop the car');
+  assert.doesNotMatch(source, /driveFor/, 'driveFor releases the hold at the end of every segment');
+});
+
+test('a hold carries its own duration as a wait', () => {
+  const { source } = rideToMacro(ride([
+    { t: 0, speed: 45, steer: 0 },
+    { t: 1200, speed: 0, steer: 0 },
+  ]));
+  assert.match(source, /await drive\(45, 0\);/);
+  assert.match(source, /await wait\(1200\);/);
+});
+
+test('a stop segment stops the car before it waits', () => {
+  const lines = rideToMacro(ride([
+    { t: 0, speed: 45, steer: 0 },
+    { t: 1000, speed: 0, steer: 0 },
+    { t: 1400, speed: 45, steer: 0 },
+  ])).source.split('\n').filter((l) => l.startsWith('await'));
+  const iStop = lines.findIndex((l) => l.includes('stopDrive'));
+  assert.ok(iStop > 0, 'the middle stop never releases the hold');
+  assert.match(lines[iStop + 1], /await wait\(400\);/, 'the stop is not held for its own time');
+});
+
+// tankFor writes the speed, arms a safety deadline and returns AT ONCE — it
+// does not sleep. Emitted back to back, every tank segment overwrote the one
+// before it and the whole ride collapsed into the last command.
+test('a tank ride carries its durations as waits, since tankFor does not sleep', () => {
+  const { source } = rideToMacro(ride([
+    { t: 0, left: 70, right: 70 },
+    { t: 1100, left: 0, right: 0 },
+  ], { path: 'tank', sourceMode: 'tracked' }));
+  assert.match(source, /await tankFor\(70, 70, 1100\);\s*(\/\/[^\n]*)?\n\s*await wait\(1100\);/);
 });

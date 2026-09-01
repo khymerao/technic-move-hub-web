@@ -123,7 +123,7 @@ test('a finished recording never overwrites the macro that was open', async () =
   const before = JSON.parse(globalThis.localStorage.getItem('lego.macros.v1') ?? '[]');
   els.get('macro-record').fire('click');
   els.get('macro-record').fire('click');
-  assert.match(els.get('macro-source').value, /driveFor/);
+  assert.match(els.get('macro-source').value, /await drive\(/);
   const after = JSON.parse(globalThis.localStorage.getItem('lego.macros.v1') ?? '[]');
   const overwritten = after.some((m) =>
     before.some((b) => b.id === m.id && b.source !== m.source));
@@ -139,7 +139,7 @@ test('the recorded slot does not reach storage until it is saved once', async ()
   els.get('macro-record').fire('click');
   els.get('macro-source').fire('input');
   const stored = JSON.parse(globalThis.localStorage.getItem('lego.macros.v1') ?? '[]');
-  assert.equal(stored.some((m) => /driveFor/.test(m.source ?? '')), false);
+  assert.equal(stored.some((m) => /await drive\(/.test(m.source ?? '')), false);
 });
 
 test('moving the tolerance re-emits from the ride without recording again', async () => {
@@ -186,7 +186,7 @@ test('stopRecording is on the panel object, and a reason from outside stops it',
   panel.stopRecording('collision');
   assert.equal(hub.recorder.recording, false);
   assert.equal(els.get('macro-record').disabled, false);
-  assert.match(els.get('macro-source').value, /driveFor/);
+  assert.match(els.get('macro-source').value, /await drive\(/);
 });
 
 test('a saved recording is kept, and the next recording opens a slot of its own', async () => {
@@ -199,7 +199,7 @@ test('a saved recording is kept, and the next recording opens a slot of its own'
   els.get('macro-unsafe').fire('change');
   const saved = JSON.parse(globalThis.localStorage.getItem('lego.macros.v1'));
   assert.equal(saved.length, 1);
-  assert.match(saved[0].source, /driveFor/);
+  assert.match(saved[0].source, /await drive\(/);
 
   els.get('macro-record').fire('click');
   els.get('macro-record').fire('click');
