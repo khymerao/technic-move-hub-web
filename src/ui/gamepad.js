@@ -1,7 +1,7 @@
 // Gamepad panel: arm/disarm the control loop, tuning, and the remap table.
 
 import { $, setToggle, rangeControl } from './dom.js';
-import { loadMap, resetMap, saveMap } from '../gamepad-controller.js';
+import { loadMap, resetMap, saveMap, loadDriveMode } from '../gamepad-controller.js';
 import { initMapper } from './gamepad-mapper.js';
 import { log } from '../debug-log.js';
 
@@ -37,6 +37,8 @@ export function initGamepadPanel(hub, { onRunChange } = {}) {
   });
 
   // See docs/DESIGN-NOTES.md § The select follows the controller, it does not own the mode
+  gpDriveMode.value = loadDriveMode();
+
   gpDriveMode.addEventListener('change', (e) => {
     // Arming takes a few seconds and sweeps the rack, so say so.
     if (e.target.value === 'playvm') {

@@ -15,6 +15,7 @@ export const PERMOTOR_TTL_MS = 1000;
 export const PERMOTOR_WATCHDOG_MS = 500;
 
 const MAP_KEY = 'lego-gamepad-map-v2';
+const MODE_KEY = 'lego-drive-mode-v1';
 const LED_CYCLE = [1, 3, 6, 7, 9, 10];
 
 export function loadMap() {
@@ -26,6 +27,16 @@ export function loadMap() {
 export function saveMap(map) {
   try { localStorage.setItem(MAP_KEY, JSON.stringify(map)); } catch { /* ignore */ }
 }
+export function loadDriveMode(fallback = 'playvm') {
+  try {
+    const saved = JSON.parse(localStorage.getItem(MODE_KEY) || 'null');
+    return GamepadController.DRIVE_MODES.includes(saved) ? saved : fallback;
+  } catch { return fallback; }
+}
+export function saveDriveMode(mode) {
+  try { localStorage.setItem(MODE_KEY, JSON.stringify(mode)); } catch { /* ignore */ }
+}
+
 export function resetMap() {
   try { localStorage.removeItem(MAP_KEY); } catch { /* ignore */ }
   return structuredClone(DEFAULT_MAP);
@@ -116,6 +127,7 @@ export class GamepadController extends EventTarget {
     this.#permotorTtlMs = options.permotorTtlMs ?? PERMOTOR_TTL_MS;
     this.#watchdogMs = options.watchdogMs ?? PERMOTOR_WATCHDOG_MS;
     // Without a playvm collaborator the default mode can command nothing at all.
+    this.params.driveMode = loadDriveMode();
     if (!playvm) this.params.driveMode = 'linked';
     this.#mix = createInputMix({ deadzone: () => this.params.deadzone });
     this.#map = loadMap();
@@ -146,10 +158,11 @@ export class GamepadController extends EventTarget {
   static DRIVE_MODES = ['linked', 'independent', 'tracked', 'playvm'];
 
   // See docs/DESIGN-NOTES.md § Exactly one drive path may be live at a time
-  async setDriveMode(mode) {
+  async setDriveMode(mode, { persist = true } = {}) {
     // Logged before anything that can throw or await, so a half-failed mode
     // change still leaves a trace.
     log('drive mode requested:', mode);
+    if (persist && GamepadController.DRIVE_MODES.includes(mode)) saveDriveMode(mode);
     this.params.driveMode = mode;
     this.#lastSent.clear();
     this.#lastLinked = null;

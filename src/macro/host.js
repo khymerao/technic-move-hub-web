@@ -276,7 +276,7 @@ export function createMacroHost(hub, {
 
         switching = true;
         try {
-          await hub.gamepad.setDriveMode(name === 'playvm' ? 'playvm' : 'linked');
+          await hub.gamepad.setDriveMode(name === 'playvm' ? 'playvm' : 'linked', { persist: false });
         } finally {
           // `switching` is host-level, not per-run: by the time this resumes,
           // a later run's switch may own the latch.

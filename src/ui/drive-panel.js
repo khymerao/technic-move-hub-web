@@ -6,6 +6,7 @@
 
 import { $, setToggle } from './dom.js';
 import { createDial } from './dial.js';
+import { loadDriveMode } from '../gamepad-controller.js';
 import {
   quatFromOrint, quatHubToScene, eulerSceneFromQuat, alignSign,
 } from '../orientation.js';
@@ -320,7 +321,7 @@ export function initDrivePanel(hub) {
 
   paintMeasure();
   paintAttitude();
-  renderCluster(hub.gamepad?.params?.driveMode ?? 'playvm');
+  renderCluster(hub.gamepad?.params?.driveMode ?? loadDriveMode());
 
   return {
     applyInvert,
