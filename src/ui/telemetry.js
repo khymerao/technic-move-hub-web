@@ -1,9 +1,38 @@
-// Hub readouts: battery, queue depth, tilt, and the opt-in motion telemetry.
+// Hub readouts: battery, supply voltage, temperature, queue depth, tilt, and
+// the opt-in motion telemetry.
 
 import { $, setToggle } from './dom.js';
 
-export function initTelemetryPanel(hub) {
+// How far back the sag reading looks. A brake recovers in about 150 ms, so a
+// live number alone never shows the dip that just happened.
+// See docs/DESIGN-NOTES.md § The supply sags under load, and the hub will report it in millivolts
+const SAG_WINDOW_MS = 10000;
+
+export function initTelemetryPanel(hub, { now = () => Date.now() } = {}) {
   const batPct = $('bat-pct'), queueOut = $('queue-depth'), tilt = $('tilt'), telemetryBtn = $('telemetry');
+  const batMv = $('bat-mv'), power = $('power'), odometer = $('odometer');
+
+  const volts = [];
+  let lastMv = null, lastC = null;
+
+  const volt = (mv) => `${(mv / 1000).toFixed(2)} V`;
+
+  // Hours once there is an hour to show, minutes below that. A hub fresh out of
+  // the box reads 0 min, which is a reading; an em dash would claim no answer.
+  const duration = (seconds) => (seconds >= 3600
+    ? `${(seconds / 3600).toFixed(1)} h`
+    : `${Math.round(seconds / 60)} min`);
+
+  function paintPower() {
+    if (!power) return;
+    const supply = lastMv == null ? '—' : volt(lastMv);
+    const sag = volts.length ? volt(Math.min(...volts.map((v) => v.mv))) : null;
+    const temp = lastC == null ? '—' : `${lastC.toFixed(1)} °C`;
+    const dip = sag && lastMv != null && lastMv - Math.min(...volts.map((v) => v.mv)) >= 50
+      ? ` · sag ${sag} (${SAG_WINDOW_MS / 1000}s)` : '';
+    power.textContent = `supply ${supply}${dip} · temp ${temp}`;
+    if (batMv) batMv.textContent = lastMv == null ? '' : ` · ${volt(lastMv)}`;
+  }
 
   $('bat-refresh').addEventListener('click', () => hub.protocol?.requestBattery());
 
@@ -47,5 +76,36 @@ export function initTelemetryPanel(hub) {
       fill.classList.toggle('low', p <= 20);
     },
     showTilt({ x, y, z }) { tilt.textContent = `tilt: x=${x} y=${y} z=${z}`; },
+
+    showVoltage(mv) {
+      const t = now();
+      lastMv = mv;
+      volts.push({ t, mv });
+      while (volts.length && t - volts[0].t > SAG_WINDOW_MS) volts.shift();
+      paintPower();
+    },
+
+    showTemperature(c) {
+      lastC = c;
+      paintPower();
+    },
+
+    // Lifetime counters the hub keeps for itself. Read once per connection —
+    // they only move between sessions, so there is nothing to repaint.
+    showOdometer(totals) {
+      if (!odometer) return;
+      odometer.textContent = totals
+        ? `played ${duration(totals.playSeconds)} · charged ${duration(totals.chargeSeconds)}`
+        : 'played — · charged —';
+    },
+
+    // The link is gone, so every number on this panel is stale rather than low.
+    resetPower() {
+      volts.length = 0;
+      lastMv = null;
+      lastC = null;
+      paintPower();
+      if (odometer) odometer.textContent = 'played — · charged —';
+    },
   };
 }

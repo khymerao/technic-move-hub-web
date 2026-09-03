@@ -236,6 +236,7 @@ async function onConnect() {
     hub.haptics = null;
     hapticsPanel.reset();
     collisionPanel.reset();
+    telemetry.resetPower();
     motion.reset();
     drivePanel.reset({ linkLost: true });
   });
@@ -252,6 +253,12 @@ async function onConnect() {
     // See docs/DESIGN-NOTES.md § Motion telemetry is off by default
     await protocol.subscribeBattery();
     await protocol.requestBattery();
+    // Cheap at these deltas: both are silent on a still machine and only speak
+    // up on the ramp.
+    await protocol.subscribeVoltage();
+    await protocol.subscribeTemperature();
+    // One read per connection: these only move between sessions.
+    telemetry.showOdometer(await protocol.readAnalyticsTotals().catch(() => null));
     // The hub's own alert channel. Reported and logged only — nothing acts on
     // it until a hardware session shows what actually arrives.
     await protocol.subscribeHubAlerts();
@@ -334,6 +341,8 @@ async function onConnect() {
   });
   protocol.addEventListener('tilt', (e) => telemetry.showTilt(e.detail));
   protocol.addEventListener('battery', (e) => telemetry.showBattery(e.detail.percent));
+  protocol.addEventListener('voltage', (e) => telemetry.showVoltage(e.detail.mv));
+  protocol.addEventListener('temperature', (e) => telemetry.showTemperature(e.detail.c));
   protocol.addEventListener('speed', (e) => {
     motors.showSpeed(e.detail.port, e.detail.speed);
     toRecorder('speed', e.detail);

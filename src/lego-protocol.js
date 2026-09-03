@@ -12,10 +12,14 @@ import {
   parseHubAttachedIO, parsePortValueSingle, buildRoleMap, EXPECTED_PORTS, parseInt32LE,
   parseHubProperty, LIGHTS_PORT, parseVector16, parseWords16, ACCEL_PORT, ORINT_PORT,
   parsePortInformation, parsePortModeInformation, parseHubAlert, HUB_ALERT,
+  VOLTAGE_MODE_INSTANT, TEMP_MODE, ANALYTICS_TOTAL_MODE, analyticsTotalFromWords,
 } from './lwp-decoders.js';
 import { log } from './debug-log.js';
 import { createBrakePolicy } from './brake-policy.js';
 import { createStreamRegistry } from './stream-registry.js';
+
+// Reads allowed while waiting for a port's mode change to take effect.
+export const ANALYTICS_READ_ATTEMPTS = 4;
 
 export class LegoProtocol extends EventTarget {
   #transport;
@@ -137,6 +141,14 @@ export class LegoProtocol extends EventTarget {
           this.dispatchEvent(new CustomEvent('position',
             { detail: { port: pv.port, pos: parseInt32LE(bytes, 4) } }));
         }
+        if (pv.port === this.roles.volt) {
+          const w = parseWords16(bytes, 1);
+          if (w) this.dispatchEvent(new CustomEvent('voltage', { detail: { mv: w[0] } }));
+        }
+        if (pv.port === this.roles.temp) {
+          const w = parseWords16(bytes, 1);
+          if (w) this.dispatchEvent(new CustomEvent('temperature', { detail: { deci: w[0], c: w[0] / 10 } }));
+        }
         if (pv.port === this.imuPort) {
           // See docs/DESIGN-NOTES.md § The tilt sensor reports words, not bytes
           const w = parseWords16(bytes, 3);
@@ -213,6 +225,56 @@ export class LegoProtocol extends EventTarget {
 
   // Four state-change notifications for the whole session. Cheap, and the only
   // channel on which the hub reports its own overload.
+  // The hub's supply rail, in mV. VLT S is the instantaneous mode: under load
+  // it sags and it is that sag, not a hub alert, that carries a magnitude.
+  async subscribeVoltage(delta = 50, holder = 'app') {
+    const port = this.roles.volt;
+    if (port == null) return false;
+    await this.#applyStream(port, VOLTAGE_MODE_INSTANT,
+      this.streams.acquire(port, VOLTAGE_MODE_INSTANT, delta, holder));
+    return true;
+  }
+
+  // Deci-degrees Celsius on the wire; the event carries degrees.
+  async subscribeTemperature(delta = 5, holder = 'app') {
+    const port = this.roles.temp;
+    if (port == null) return false;
+    await this.#applyStream(port, TEMP_MODE,
+      this.streams.acquire(port, TEMP_MODE, delta, holder));
+    return true;
+  }
+
+  // Lifetime play and charge seconds. Not a stream: the hub commits these only
+  // at some point after a session ends. A bare port read answers in the port's
+  // CURRENT mode, so the mode has to be selected first and given back after.
+  async readAnalyticsTotals(holder = 'app') {
+    const port = this.roles.analytics;
+    if (port == null) return null;
+    await this.subscribePort(port, ANALYTICS_TOTAL_MODE, 1, holder);
+    try {
+      // The mode change is not instant, and a frame in flight from the old mode
+      // reaches the reader first. Two matching reads is the gate: these figures
+      // do not move within a session, so a mid-switch frame cannot agree with a
+      // settled one.
+      let previous = null;
+      for (let attempt = 0; attempt < ANALYTICS_READ_ATTEMPTS; attempt++) {
+        const totals = analyticsTotalFromWords(await this.readPortValue(port));
+        if (totals && previous
+          && totals.chargeSeconds === previous.chargeSeconds
+          && totals.playSeconds === previous.playSeconds
+          && totals.third === previous.third) return totals;
+        previous = totals;
+      }
+      log('analytics: totals never settled');
+      return null;
+    } finally {
+      await this.unsubscribePort(port, ANALYTICS_TOTAL_MODE, holder);
+      // Releasing the stream stops the notifications; it does not put the mode
+      // back. An InputFormatSetup with notifications off is what selects one.
+      await this.#transport.sendPayload(encodeInputFormatDisable(port, 0x00));
+    }
+  }
+
   async subscribeHubAlerts() {
     for (const type of Object.values(HUB_ALERT)) {
       await this.#transport.sendPayload(encodeHubAlertSubscribe(type));

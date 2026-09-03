@@ -99,6 +99,8 @@
             <li><a href="#g-telemetry-off-on">telemetry: OFF / ON</a></li>
             <li><a href="#g-crash-guard-off-on">crash guard: OFF / ON</a></li>
             <li><a href="#g-tilt-readout">tilt readout</a></li>
+            <li><a href="#g-supply-and-temp-readout">supply and temp readout</a></li>
+            <li><a href="#g-played-and-charged-readout">played and charged readout</a></li>
           </ul>
         </li>
         <li class="toc__g">
@@ -500,6 +502,20 @@
 <section class="ctrl" data-t="tilt readout not a control. reads tilt: — (turn telemetry on) until telemetry is switched on, then shows three numbers for the hub's orientation.">
 <h3 id="g-tilt-readout">tilt readout</h3>
 <p>Not a control. Reads <code>tilt: — (turn telemetry on)</code> until telemetry is switched on, then shows three numbers for the hub's orientation.</p>
+</section>
+<section class="ctrl" data-t="supply and temp readout not a control, and not behind the telemetry toggle — both are live from the moment you connect. supply is the hub's own battery voltage. a full cell reads about 4.2 v and the hub cuts out somewhere below 3 v, so this is the number that tells you a pack is tired long before the percentage does. when you drive, the voltage drops — the motors pull the rail down while they spin up, and it climbs back within a fraction of a second of stopping. that dip is too fast to read off a live figure, so once it goes past 50 mv the line adds sag, which is the lowest reading of the last ten seconds. on a healthy pack a hard launch shows a sag of roughly half a volt. a sag that keeps getting deeper across a session, or one that reaches down near 3 v, means the pack is where your power is going. temp is the hub's internal temperature. it climbs under sustained driving. the whole line blanks when the link drops, rather than freezing on its last value.">
+<h3 id="g-supply-and-temp-readout">supply and temp readout</h3>
+<p>Not a control, and not behind the telemetry toggle — both are live from the moment you connect.</p>
+<p><code>supply</code> is the hub's own battery voltage. A full cell reads about 4.2&nbsp;V and the hub cuts out somewhere below 3&nbsp;V, so this is the number that tells you a pack is tired long before the percentage does.</p>
+<p>When you drive, the voltage drops — the motors pull the rail down while they spin up, and it climbs back within a fraction of a second of stopping. That dip is too fast to read off a live figure, so once it goes past 50&nbsp;mV the line adds <code>sag</code>, which is the lowest reading of the last ten seconds. On a healthy pack a hard launch shows a sag of roughly half a volt. A sag that keeps getting deeper across a session, or one that reaches down near 3&nbsp;V, means the pack is where your power is going.</p>
+<p><code>temp</code> is the hub's internal temperature. It climbs under sustained driving.</p>
+<p>The whole line blanks when the link drops, rather than freezing on its last value.</p>
+</section>
+<section class="ctrl" data-t="played and charged readout not a control. the hub keeps its own lifetime counters — how long it has been driven and how long it has been on the charger, across its whole life, not this session. they are read once when you connect, because that is the only time they change: the hub commits them somewhere after a session ends rather than while one is running. nothing acts on these. they are the closest thing this hub has to an odometer, and they are the honest answer to “how much has this thing actually been used”. a hub that does not report the counters shows dashes.">
+<h3 id="g-played-and-charged-readout">played and charged readout</h3>
+<p>Not a control. The hub keeps its own lifetime counters — how long it has been driven and how long it has been on the charger, across its whole life, not this session. They are read once when you connect, because that is the only time they change: the hub commits them somewhere after a session ends rather than while one is running.</p>
+<p>Nothing acts on these. They are the closest thing this hub has to an odometer, and they are the honest answer to &ldquo;how much has this thing actually been used&rdquo;.</p>
+<p>A hub that does not report the counters shows dashes.</p>
 </section>
 </section>
 <section class="group"><h2 id="g-motion-tab">Motion tab</h2>

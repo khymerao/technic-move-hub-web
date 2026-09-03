@@ -3,6 +3,9 @@
 export const IO_TYPE = {
   DRIVE_MOTOR: 0x0056, STEER_MOTOR: 0x0057, RGB_LED: 0x0017,
   LIGHTS_6: 0x0058, // Technic Move built-in 6-lamp array
+  VOLTAGE: 0x0014,     // port 0x3c: modes VLT L (filtered) and VLT S (instant), mV
+  TEMPERATURE: 0x003c, // port 0x37: mode TEMP, deci-degrees C
+  ANALYTICS: 0x005c,   // port 0x3d: LEIOTypeTechnicAnalytics, play/charge counters
 };
 export const EXPECTED_PORTS = { imu: 0x3a, lights: 0x35 };
 export const LIGHTS_PORT = 0x35;
@@ -11,6 +14,11 @@ export const ORINT_PORT = 0x3b; // fused orientation quaternion, 4x Int16
 // Accepts the 13-byte combined frame; 0x08 in its lights field is CALIBRATE_STEERING.
 // See docs/DESIGN-NOTES.md § The lights field of the combined frame is not only lights
 export const PLAYVM_PORT = 0x36;
+// VLT S, the instantaneous mode. VLT L is mode 0 and is averaged.
+export const VOLTAGE_MODE_INSTANT = 0x01;
+export const TEMP_MODE = 0x00;
+// Mode 3 of the analytics device, 'Total': three Int32 lifetime accumulators.
+export const ANALYTICS_TOTAL_MODE = 0x03;
 
 const toSigned = (b) => (b > 127 ? b - 256 : b);
 
@@ -97,6 +105,9 @@ export function buildRoleMap(events) {
     else if (e.ioType === IO_TYPE.STEER_MOTOR) map.steer = e.port;
     else if (e.ioType === IO_TYPE.RGB_LED) map.led = e.port;
     else if (e.ioType === IO_TYPE.LIGHTS_6) map.lights = e.port;
+    else if (e.ioType === IO_TYPE.VOLTAGE) map.volt = e.port;
+    else if (e.ioType === IO_TYPE.TEMPERATURE) map.temp = e.port;
+    else if (e.ioType === IO_TYPE.ANALYTICS) map.analytics = e.port;
   }
   if (drives[0] !== undefined) map.driveA = drives[0];
   if (drives[1] !== undefined) map.driveB = drives[1];
@@ -106,6 +117,18 @@ export function buildRoleMap(events) {
 // Port Value (0x45) payloads that carry signed 16-bit words: the accelerometer
 // and gyro (3), the tilt sensor (3), the orientation quaternion (4). Null
 // rather than a partial reading when the payload is short.
+// 'Total' is three Int32 accumulators, but a port read hands back Int16 words.
+// Charge seconds, play seconds, and a third figure never seen to move.
+export function analyticsTotalFromWords(words) {
+  if (!words || words.length < 6) return null;
+  const u32 = (lo, hi) => (((lo & 0xffff) | ((hi & 0xffff) << 16)) >>> 0);
+  return {
+    chargeSeconds: u32(words[0], words[1]),
+    playSeconds: u32(words[2], words[3]),
+    third: u32(words[4], words[5]),
+  };
+}
+
 export function parseWords16(bytes, count = 3) {
   const m = parseMessage(bytes);
   if (!m || m.type !== 0x45 || m.payload.length < 1 + count * 2) return null;
