@@ -1,5 +1,9 @@
 # LEGO Technic Move Hub controller — Web Bluetooth
 
+<a href="https://ko-fi.com/org100h">
+  <img alt="Donate on Ko-fi" src="https://ko-fi.com/img/githubbutton_sm.svg">
+</a>
+
 Drive LEGO® Technic™ models built around the **Technic Move Hub** (88019) from a
 browser tab, with an Xbox or PlayStation controller if you have one. No app, no
 install, no account, no extra hardware, and the hub's firmware is never touched.
